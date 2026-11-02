@@ -1,6 +1,8 @@
 package edu.co.icesi.proyectofinal.unit;
 
+import edu.co.icesi.proyectofinal.entity.Role;
 import edu.co.icesi.proyectofinal.entity.User;
+import edu.co.icesi.proyectofinal.repository.RoleRepository;
 import edu.co.icesi.proyectofinal.repository.UserRepository;
 import edu.co.icesi.proyectofinal.services.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,15 +26,23 @@ public class UserServiceTest {
     private UserRepository userRepository;
 
     @Mock
+    private RoleRepository roleRepository;
+
+    @Mock
     private PasswordEncoder encoder;
 
     @InjectMocks
     private UserServiceImpl userService;
 
     private User user;
+    private Role traineeRole;
 
     @BeforeEach
     void setup() {
+        traineeRole = new Role();
+        traineeRole.setId(1L);
+        traineeRole.setName("TRAINEE");
+
         user = new User();
         user.setIdUser(1);
         user.setFirstName("Juan");
@@ -55,6 +65,12 @@ public class UserServiceTest {
                 user
         );
 
+        when(
+                roleRepository.findByName("TRAINEE")
+        ).thenReturn(
+                Optional.of(traineeRole)
+        );
+
         // ACT
         User result = userService.saveUser(user);
 
@@ -62,6 +78,34 @@ public class UserServiceTest {
         assertNotNull(result);
         assertEquals(user.getFirstName(), result.getFirstName());
         assertEquals(user.getInstitutionalEmail(), result.getInstitutionalEmail());
+    }
+
+    @Test
+    void saveUser_WhenNoRoles_ShouldAssignTraineeRole() {
+        // ARRANGE
+        when(encoder.encode(anyString())).thenReturn("hashedPassword");
+        when(userRepository.save(user)).thenReturn(user);
+        when(roleRepository.findByName("TRAINEE")).thenReturn(Optional.of(traineeRole));
+
+        // ACT
+        User result = userService.saveUser(user);
+
+        // ASSERT
+        assertNotNull(result.getUserRoles());
+        assertEquals(1, result.getUserRoles().size());
+        assertEquals("TRAINEE", result.getUserRoles().get(0).getRole().getName());
+        assertEquals(user.getIdUser(), result.getUserRoles().get(0).getId().getUserId());
+    }
+
+    @Test
+    void saveUser_WhenTraineeRoleMissing_ShouldThrow() {
+        // ARRANGE
+        when(encoder.encode(anyString())).thenReturn("hashedPassword");
+        when(userRepository.save(user)).thenReturn(user);
+        when(roleRepository.findByName("TRAINEE")).thenReturn(Optional.empty());
+
+        // ACT + ASSERT
+        assertThrows(IllegalStateException.class, () -> userService.saveUser(user));
     }
 
 
