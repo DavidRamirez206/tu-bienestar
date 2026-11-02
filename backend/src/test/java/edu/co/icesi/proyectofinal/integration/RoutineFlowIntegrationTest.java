@@ -43,6 +43,7 @@ class RoutineFlowIntegrationTest {
     @Autowired private UserRepository userRepository;
     @Autowired private ExerciseRepository exerciseRepository;
     @Autowired private RoutineRepository routineRepository;
+    @Autowired private jakarta.persistence.EntityManager entityManager;
 
     private User owner;
     private User other;
@@ -103,13 +104,92 @@ class RoutineFlowIntegrationTest {
     @Test
     void createdRoutineBelongsToTheUserAndAppearsInTheList() throws Exception {
         mockMvc.perform(post("/api/v1/routines").with(as(owner)).contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Piernas\",\"isPredesigned\":true,\"userId\":" + other.getIdUser() + "}"))
+                        .content("{\"name\":\"Piernas\",\"userId\":" + other.getIdUser() + "}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.userId").value(owner.getIdUser()))
                 .andExpect(jsonPath("$.isPredesigned").value(false));
 
         mockMvc.perform(get("/api/v1/routines").with(as(owner)))
                 .andExpect(jsonPath("$[*].name", hasItem("Piernas")));
+    }
+
+    private RequestPostProcessor asTrainer(User user) {
+        return SecurityMockMvcRequestPostProcessors.user(user.getInstitutionalEmail()).authorities(
+                java.util.stream.Stream.concat(java.util.Arrays.stream(TRAINEE_AUTHORITIES), java.util.stream.Stream.of("TRAINER"))
+                        .map(org.springframework.security.core.authority.SimpleGrantedAuthority::new)
+                        .toList());
+    }
+
+    private Integer publish(User trainer) throws Exception {
+        String response = mockMvc.perform(post("/api/v1/routines").with(asTrainer(trainer)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Plan oficial\",\"isPredesigned\":true,\"level\":\"Intermedio\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.isPredesigned").value(true))
+                .andExpect(jsonPath("$.level").value("Intermedio"))
+                .andReturn().getResponse().getContentAsString();
+        Integer id = com.jayway.jsonpath.JsonPath.read(response, "$.idRoutine");
+        mockMvc.perform(put("/api/v1/routine-exercises/routine/" + id + "/exercises").with(asTrainer(trainer))
+                        .contentType(MediaType.APPLICATION_JSON).content(items(squats.getIdExercise(), 3, 10)))
+                .andExpect(status().isOk());
+        return id;
+    }
+
+    @Test
+    void traineeCannotPublishPredesignedRoutine() throws Exception {
+        mockMvc.perform(post("/api/v1/routines").with(as(owner)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Plan\",\"isPredesigned\":true,\"level\":\"Intermedio\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void predesignedRoutineRequiresAValidLevel() throws Exception {
+        mockMvc.perform(post("/api/v1/routines").with(asTrainer(owner)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Plan\",\"isPredesigned\":true}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void usersSeePublishedRoutines() throws Exception {
+        publish(owner);
+        mockMvc.perform(get("/api/v1/routines").with(as(other)))
+                .andExpect(jsonPath("$[*].name", hasItem("Plan oficial")));
+    }
+
+    @Test
+    void adoptingCopiesTheRoutineAndKeepsTheOriginalUntouched() throws Exception {
+        Integer originalId = publish(owner);
+        entityManager.flush();
+        entityManager.clear();
+
+        String response = mockMvc.perform(post("/api/v1/routines/" + originalId + "/adopt").with(as(other)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.isPredesigned").value(false))
+                .andExpect(jsonPath("$.userId").value(other.getIdUser()))
+                .andExpect(jsonPath("$.level").value("Intermedio"))
+                .andReturn().getResponse().getContentAsString();
+        Integer copyId = com.jayway.jsonpath.JsonPath.read(response, "$.idRoutine");
+        entityManager.flush();
+        entityManager.clear();
+
+        mockMvc.perform(put("/api/v1/routine-exercises/routine/" + copyId + "/exercises").with(as(other))
+                        .contentType(MediaType.APPLICATION_JSON).content(items(squats.getIdExercise(), 8, 30)))
+                .andExpect(status().isOk());
+        entityManager.flush();
+        entityManager.clear();
+
+        mockMvc.perform(get("/api/v1/routine-exercises/routine/" + originalId + "/exercises").with(as(other)))
+                .andExpect(jsonPath("$[0].sets").value(3));
+        mockMvc.perform(put("/api/v1/routine-exercises/routine/" + originalId + "/exercises").with(as(other))
+                        .contentType(MediaType.APPLICATION_JSON).content(items()))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/routines/" + originalId + "/adopt").with(as(other)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void onlyPredesignedRoutinesCanBeAdopted() throws Exception {
+        Integer id = routine(owner).getIdRoutine();
+        mockMvc.perform(post("/api/v1/routines/" + id + "/adopt").with(as(other))).andExpect(status().isBadRequest());
     }
 
     @Test

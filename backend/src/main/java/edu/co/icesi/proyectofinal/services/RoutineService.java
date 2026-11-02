@@ -23,6 +23,8 @@ public interface RoutineService {
 
     List<Routine> findPredesigned();
 
+    Routine adoptRoutine(Integer routineId, User targetUser);
+
     boolean canView(Routine routine, User user);
 
     void assertCanModify(Integer routineId, User user);

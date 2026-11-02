@@ -22,5 +22,7 @@ public class RoutineRequest {
     @JsonProperty("isPredesigned")
     private boolean predesigned;
     
+    private String level;
+
     private Integer userId;
 }

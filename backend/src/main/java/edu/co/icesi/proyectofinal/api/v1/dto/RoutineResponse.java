@@ -21,5 +21,7 @@ public class RoutineResponse {
     @JsonProperty("isPredesigned")
     private boolean predesigned;
     
+    private String level;
+
     private Integer userId;
 }

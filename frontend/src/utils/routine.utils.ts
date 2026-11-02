@@ -27,20 +27,31 @@ export const todayAsDateOnly = (): string => {
   return `${now.getFullYear()}-${month}-${day}`;
 };
 
+export const ROUTINE_LEVELS = ["Principiante", "Intermedio", "Avanzado"];
+
+export const canPublishRoutines = (authorities: string[] = []): boolean => {
+  return authorities.includes("TRAINER") || authorities.includes("ADMIN");
+};
+
 export const buildRoutinePayload = ({
   name,
   description,
   creationDate,
+  isPredesigned,
+  level,
 }: {
   name: string;
   description: string;
   creationDate: string;
+  isPredesigned: boolean;
+  level: string;
 }): RoutineRequest => {
   return {
     name: name.trim(),
     description: description.trim() || undefined,
     creationDate,
-    isPredesigned: false,
+    isPredesigned,
+    level: isPredesigned ? level : undefined,
   };
 };
 
