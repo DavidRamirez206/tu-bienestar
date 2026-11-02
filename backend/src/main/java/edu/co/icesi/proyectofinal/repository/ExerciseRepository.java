@@ -9,6 +9,8 @@ import java.util.Optional;
 
 public interface ExerciseRepository extends JpaRepository<Exercise, Integer> {
 
+    List<Exercise> findByPredefinedTrueOrUserExerciseIdUser(Integer userId);
+
     List<Exercise> findByType(String type);
 
     List<Exercise> findByDifficulty(String difficulty);
