@@ -107,6 +107,9 @@ export interface RoutineExerciseResponse {
   sets: number;
   targetReps: number;
   exerciseOrder: number;
+  exerciseName?: string;
+  exerciseType?: string;
+  exerciseDifficulty?: string;
 }
 
 export type RoutineExerciseRequest = {

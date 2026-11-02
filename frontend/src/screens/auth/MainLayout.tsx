@@ -18,6 +18,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import CssBaseline from "@mui/material/CssBaseline";
 
 import HomeIcon from "@mui/icons-material/Home";
+import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import React from "react";
 
@@ -38,6 +39,11 @@ const navItems: NavItem[] = [
     label: "Inicio",
     path: "/",
     icon: <HomeIcon />,
+  },
+  {
+    label: "Rutinas",
+    path: "/routines",
+    icon: <FitnessCenterIcon />,
   },
 ];
 
