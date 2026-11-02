@@ -79,7 +79,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.UNAUTHORIZED.value(),
-                "Authentication Failed: " + ex.getMessage(),
+                "Usuario o contraseña incorrectos",
                 LocalDateTime.now()
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
