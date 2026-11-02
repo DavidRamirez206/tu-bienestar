@@ -1,0 +1,28 @@
+# Variables de entorno: nunca subir valores reales
+.env
+.env.*
+!.env.example
+
+# Backend
+backend/target/
+backend/deploy/
+backend/htmlReport/
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Editores y sistema
+.idea/
+.vscode/
+*.iml
+.DS_Store
+logs/
+*.log
+
+# Herramientas de IA
+.claude/
+.gemini/
+GEMINI.md
+CLAUDE.md
