@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router";
+import LoginScreen from "../screens/auth/LoginScreen";
 import ProtectedRoute from "../components/wrapper/ProtectedRoute";
 import MainLayout from "../screens/auth/MainLayout";
 import HomeScreen from "../screens/auth/HomeScreen";
@@ -8,6 +9,10 @@ import UnauthorizedScreen from "../screens/common/UnauthorizedScreen";
 // Cada historia agrega aqui sus rutas.
 const router = createBrowserRouter(
   [
+    {
+      path: "/login",
+      element: <LoginScreen />,
+    },
     {
       path: "/unauthorized",
       element: <UnauthorizedScreen />,
