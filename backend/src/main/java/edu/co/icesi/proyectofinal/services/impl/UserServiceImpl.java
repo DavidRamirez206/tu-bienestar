@@ -9,11 +9,15 @@ import edu.co.icesi.proyectofinal.repository.UserRepository;
 import edu.co.icesi.proyectofinal.services.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
+
+    private static final String DEFAULT_ROLE = "TRAINEE";
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -25,6 +29,7 @@ public class UserServiceImpl implements UserService {
         this.encoder = encoder;
     }
 
+    @Transactional
     public User saveUser(User user){
         if (userRepository.existsByInstitutionalEmail(user.getInstitutionalEmail())) {
             throw new IllegalArgumentException("Email already exists");
@@ -37,7 +42,27 @@ public class UserServiceImpl implements UserService {
         String encodedPassword = encoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        if (savedUser.getUserRoles() == null || savedUser.getUserRoles().isEmpty()) {
+            Role defaultRole = roleRepository.findByName(DEFAULT_ROLE)
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Default role " + DEFAULT_ROLE + " is not configured"));
+
+            UserRoleId userRoleId = new UserRoleId();
+            userRoleId.setUserId(savedUser.getIdUser());
+            userRoleId.setRoleId(defaultRole.getId());
+
+            UserRole userRole = new UserRole();
+            userRole.setId(userRoleId);
+            userRole.setUser(savedUser);
+            userRole.setRole(defaultRole);
+
+            savedUser.setUserRoles(new ArrayList<>(List.of(userRole)));
+            savedUser = userRepository.save(savedUser);
+        }
+
+        return savedUser;
     }
 
     public void deleteUserById(Integer userId){
