@@ -89,6 +89,7 @@ export interface RoutineResponse {
   description?: string;
   creationDate: string; // LocalDate
   isPredesigned: boolean;
+  level?: string;
   userId?: number;
   routineExercises?: RoutineExerciseResponse[];
 }
@@ -98,6 +99,7 @@ export type RoutineRequest = {
   description?: string;
   creationDate: string;
   isPredesigned: boolean;
+  level?: string;
   userId?: number;
 };
 

@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import MenuItem from "@mui/material/MenuItem";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -19,6 +22,7 @@ import type { RoutineExerciseDraft } from "../../utils/routine.utils";
 import {
   buildRoutinePayload,
   createDraftFromExercise,
+  ROUTINE_LEVELS,
   sortExercisesByName,
   todayAsDateOnly,
 } from "../../utils/routine.utils";
@@ -30,6 +34,7 @@ type Props = {
   routine: RoutineResponse | null;
   exercises: ExerciseResponse[];
   routineExercises: RoutineExerciseResponse[];
+  canPublish: boolean;
   onClose: () => void;
   onSave: (
     payload: RoutineRequest,
@@ -44,6 +49,7 @@ const RoutineFormDialog = ({
   routine,
   exercises,
   routineExercises,
+  canPublish,
   onClose,
   onSave,
   onCreateCustomExercise,
@@ -79,6 +85,8 @@ const RoutineFormDialog = ({
     routine?.creationDate ?? todayAsDateOnly(),
   );
   const [drafts, setDrafts] = useState<RoutineExerciseDraft[]>(initialDrafts);
+  const [isPredesigned, setIsPredesigned] = useState(routine?.isPredesigned ?? false);
+  const [level, setLevel] = useState(routine?.level ?? "");
   const [formError, setFormError] = useState<string | null>(null);
 
   const handleCreateCustomExercise = async (payload: ExerciseRequest) => {
@@ -97,6 +105,16 @@ const RoutineFormDialog = ({
       return;
     }
 
+    if (isPredesigned && !level) {
+      setFormError("Elige el nivel de la rutina prediseñada.");
+      return;
+    }
+
+    if (isPredesigned && drafts.length === 0) {
+      setFormError("Una rutina prediseñada necesita al menos un ejercicio.");
+      return;
+    }
+
     if (drafts.some((draft) => draft.sets < 1 || draft.targetReps < 1)) {
       setFormError("Las series y repeticiones deben ser mayores que cero.");
       return;
@@ -108,6 +126,8 @@ const RoutineFormDialog = ({
       name,
       description,
       creationDate,
+      isPredesigned,
+      level,
     });
 
     await onSave(payload, drafts, routine?.idRoutine);
@@ -153,6 +173,37 @@ const RoutineFormDialog = ({
               onChange={(e) => setCreationDate(e.target.value)}
               slotProps={{ inputLabel: { shrink: true } }}
             />
+
+            {canPublish && (
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ alignItems: { sm: "center" } }}>
+                <FormControlLabel
+                  sx={{ flexGrow: 1 }}
+                  control={
+                    <Checkbox
+                      checked={isPredesigned}
+                      onChange={(e) => setIsPredesigned(e.target.checked)}
+                    />
+                  }
+                  label="Publicar como rutina prediseñada"
+                />
+                {isPredesigned && (
+                  <TextField
+                    select
+                    required
+                    label="Nivel"
+                    value={level}
+                    onChange={(e) => setLevel(e.target.value)}
+                    sx={{ minWidth: 200 }}
+                  >
+                    {ROUTINE_LEVELS.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              </Stack>
+            )}
 
             <RoutineExercisesBuilder
               exercises={sortedExercises}

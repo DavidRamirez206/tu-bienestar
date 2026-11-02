@@ -25,6 +25,12 @@ export const updateRoutine = async (id: number, request: RoutineRequest) => {
     );
 };
 
+export const adoptRoutine = async (id: number) => {
+    return safeRequest<RoutineResponse>(
+        axiosClient.post(`/api/v1/routines/${id}/adopt`)
+    );
+};
+
 export const deleteRoutine = async (id: number) => {
     return safeRequest<void>(
         axiosClient.delete(`/api/v1/routines/${id}`)

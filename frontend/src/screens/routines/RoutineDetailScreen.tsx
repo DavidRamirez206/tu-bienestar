@@ -28,7 +28,7 @@ import type {
   RoutineRequest,
   RoutineResponse,
 } from '../../types/api.types';
-import { mapDraftToRoutineExerciseRequest, type RoutineExerciseDraft } from '../../utils/routine.utils';
+import { canPublishRoutines, mapDraftToRoutineExerciseRequest, type RoutineExerciseDraft } from '../../utils/routine.utils';
 import RoutineFormDialog from '../../components/routines/RoutineFormDialog';
 import useAuth from '../../hooks/useAuth';
 import { useAppDispatch } from '../../hooks/useDispatch';
@@ -151,7 +151,9 @@ const RoutineDetailScreen: React.FC = () => {
               {routine.description || 'Sin descripción detallada.'}
             </Typography>
           </Box>
-          {routine.isPredesigned && <Chip label="Prediseñada" color="secondary" sx={{ fontWeight: 'bold' }} />}
+          {routine.isPredesigned && (
+            <Chip label={`Prediseñada · ${routine.level ?? 'Sin nivel'}`} color="secondary" sx={{ fontWeight: 'bold' }} />
+          )}
         </Box>
 
         <Divider sx={{ my: 4 }} />
@@ -191,6 +193,7 @@ const RoutineDetailScreen: React.FC = () => {
           routine={routine}
           exercises={exercises}
           routineExercises={items}
+          canPublish={canPublishRoutines(user?.authorities)}
           onClose={() => setOpenForm(false)}
           onSave={handleSave}
           onCreateCustomExercise={handleCreateCustomExercise}
