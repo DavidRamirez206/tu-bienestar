@@ -29,6 +29,9 @@ public class Routine {
     @Column(nullable = false)
     private boolean predesigned;
 
+    @Column(length = 20)
+    private String level;
+
     @OneToMany(mappedBy = "routine", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RoutineExercise> routineExercises;
 }

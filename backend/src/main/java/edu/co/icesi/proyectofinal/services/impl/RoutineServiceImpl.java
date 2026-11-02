@@ -97,6 +97,8 @@ public class RoutineServiceImpl implements RoutineService {
                 .orElseThrow(() -> new RuntimeException("Routine with id " + id + " not found"));
         existing.setName(updated.getName());
         existing.setDescription(updated.getDescription());
+        existing.setPredesigned(updated.isPredesigned());
+        existing.setLevel(updated.getLevel());
         if (updated.getCreationDate() != null) {
             existing.setCreationDate(updated.getCreationDate());
         }
@@ -112,6 +114,49 @@ public class RoutineServiceImpl implements RoutineService {
     @Override
     public List<Routine> findPredesigned() {
         return routineRepository.findByPredesigned(true);
+    }
+
+    @Override
+    @Transactional
+    public Routine adoptRoutine(Integer routineId, User targetUser) {
+        Routine source = findById(routineId);
+        if (!source.isPredesigned()) {
+            throw new IllegalArgumentException("Invalid routine: only predesigned routines can be adopted");
+        }
+
+        String adoptedName = source.getName() + " (Adoptada)";
+        if (routineRepository.existsByNameAndUserRoutineIdUser(adoptedName, targetUser.getIdUser())) {
+            throw new IllegalArgumentException("Adopted routine already exists");
+        }
+
+        Routine copy = new Routine();
+        copy.setName(adoptedName);
+        copy.setDescription(source.getDescription());
+        copy.setLevel(source.getLevel());
+        copy.setCreationDate(LocalDate.now());
+        copy.setPredesigned(false);
+        copy.setUserRoutine(targetUser);
+        copy.setRoutineExercises(new ArrayList<>());
+
+        Routine savedCopy = routineRepository.save(copy);
+
+        for (RoutineExercise item : source.getRoutineExercises() == null ? List.<RoutineExercise>of() : source.getRoutineExercises()) {
+            RoutineExerciseId id = new RoutineExerciseId();
+            id.setRoutineId(savedCopy.getIdRoutine());
+            id.setExerciseId(item.getExercise().getIdExercise());
+
+            RoutineExercise itemCopy = new RoutineExercise();
+            itemCopy.setId(id);
+            itemCopy.setRoutine(savedCopy);
+            itemCopy.setExercise(item.getExercise());
+            itemCopy.setSets(item.getSets());
+            itemCopy.setTargetReps(item.getTargetReps());
+            itemCopy.setExerciseOrder(item.getExerciseOrder());
+
+            savedCopy.getRoutineExercises().add(itemCopy);
+        }
+
+        return routineRepository.save(savedCopy);
     }
 
     @Override

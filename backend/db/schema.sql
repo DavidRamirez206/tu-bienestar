@@ -127,6 +127,7 @@ create table activities (
         id_user integer,
         predesigned boolean not null,
         description varchar(255),
+        level varchar(20),
         name varchar(255) not null,
         primary key (id_routine)
     );

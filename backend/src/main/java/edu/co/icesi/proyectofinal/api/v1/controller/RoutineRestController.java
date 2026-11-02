@@ -15,12 +15,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -36,6 +39,23 @@ public class RoutineRestController {
         this.routineService = routineService;
         this.routineMapper = routineMapper;
         this.userService = userService;
+    }
+
+    private static final Set<String> VALID_LEVELS = Set.of("Principiante", "Intermedio", "Avanzado");
+
+    private void applyPublicationRules(Routine routine, Authentication authentication) {
+        if (!routine.isPredesigned()) {
+            routine.setLevel(null);
+            return;
+        }
+        boolean canPublish = authentication.getAuthorities().stream()
+                .anyMatch(authority -> Set.of("TRAINER", "ADMIN").contains(authority.getAuthority()));
+        if (!canPublish) {
+            throw new AccessDeniedException("Only trainers can publish predesigned routines");
+        }
+        if (routine.getLevel() == null || !VALID_LEVELS.contains(routine.getLevel())) {
+            throw new IllegalArgumentException("Invalid routine: level is required for predesigned routines");
+        }
     }
 
     @Operation(
@@ -99,11 +119,11 @@ public class RoutineRestController {
     )
     @PostMapping
     @PreAuthorize("hasAuthority('CREATE_ROUTINE')")
-    public ResponseEntity<RoutineResponse> create(@Valid @RequestBody RoutineRequest routineRequest, Principal principal) {
+    public ResponseEntity<RoutineResponse> create(@Valid @RequestBody RoutineRequest routineRequest, Authentication principal) {
         User user = userService.getUserByEmail(principal.getName());
         Routine routine = routineMapper.toEntity(routineRequest);
         routine.setUserRoutine(user);
-        routine.setPredesigned(false);
+        applyPublicationRules(routine, principal);
         Routine savedRoutine = routineService.save(routine);
         return ResponseEntity.status(HttpStatus.CREATED).body(routineMapper.toResponse(savedRoutine));
     }
@@ -119,12 +139,21 @@ public class RoutineRestController {
     )
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('EDIT_ROUTINE')")
-    public ResponseEntity<RoutineResponse> update(@PathVariable Integer id, @Valid @RequestBody RoutineRequest routineRequest, Principal principal) {
+    public ResponseEntity<RoutineResponse> update(@PathVariable Integer id, @Valid @RequestBody RoutineRequest routineRequest, Authentication principal) {
         User user = userService.getUserByEmail(principal.getName());
         routineService.assertCanModify(id, user);
         Routine routine = routineMapper.toEntity(routineRequest);
+        applyPublicationRules(routine, principal);
         Routine updatedRoutine = routineService.update(id, routine);
         return ResponseEntity.ok(routineMapper.toResponse(updatedRoutine));
+    }
+
+    @PostMapping("/{id}/adopt")
+    @Operation(summary = "Adopt a predesigned routine", description = "Copies the routine into the user's routines")
+    @PreAuthorize("hasAuthority('CREATE_ROUTINE')")
+    public ResponseEntity<RoutineResponse> adopt(@PathVariable Integer id, Principal principal) {
+        User user = userService.getUserByEmail(principal.getName());
+        return ResponseEntity.status(HttpStatus.CREATED).body(routineMapper.toResponse(routineService.adoptRoutine(id, user)));
     }
 
     @DeleteMapping("/{id}")
