@@ -93,8 +93,9 @@ const RoutineExercisesBuilder = ({
 
       <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
         <FormControl fullWidth>
-          <InputLabel>Añadir Ejercicio</InputLabel>
+          <InputLabel id="add-exercise-label">Añadir Ejercicio</InputLabel>
           <Select
+            labelId="add-exercise-label"
             value={selectedExerciseId}
             label="Añadir Ejercicio"
             onChange={(e) => onSelectedExerciseChange(e.target.value)}
