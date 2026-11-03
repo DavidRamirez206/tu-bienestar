@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -117,7 +118,7 @@ public class ProgressRestController {
             }
     )
     @PreAuthorize("hasAnyAuthority('CREATE_PROGRESS', 'EDIT_OWN_PROFILE')")
-    public ResponseEntity<ProgressResponse> create(@RequestBody ProgressRequest request) {
+    public ResponseEntity<ProgressResponse> create(@RequestBody @Valid ProgressRequest request) {
         Progress progress = progressMapper.toEntity(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(progressMapper.toResponse(progressService.createProgress(progress)));
     }
@@ -133,7 +134,7 @@ public class ProgressRestController {
             }
     )
     @PreAuthorize("hasAnyAuthority('EDIT_PROGRESS', 'EDIT_OWN_PROFILE')")
-    public ResponseEntity<ProgressResponse> update(@PathVariable Integer id, @RequestBody ProgressRequest request) {
+    public ResponseEntity<ProgressResponse> update(@PathVariable Integer id, @RequestBody @Valid ProgressRequest request) {
         Progress progress = progressMapper.toEntity(request);
         progress.setIdProgress(id);
         return ResponseEntity.ok(progressMapper.toResponse(progressService.updateProgress(progress)));
