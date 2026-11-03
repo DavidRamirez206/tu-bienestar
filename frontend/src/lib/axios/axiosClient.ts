@@ -31,7 +31,9 @@ export async function safeRequest<T>(request: AxiosPromise<T>) {
     } catch (error) {
         return {
             error: true,
-            message: axios.isAxiosError(error) ? error.message : 'An unexpected error occurred',
+            message: axios.isAxiosError(error)
+                ? ((error.response?.data as { message?: string } | undefined)?.message ?? error.message)
+                : 'An unexpected error occurred',
             status: axios.isAxiosError(error) ? error.response?.status : undefined,
         };
     }
