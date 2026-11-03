@@ -107,7 +107,7 @@ public class ExerciseRestController {
     )
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('EDIT_EXERCISE')")
-    public ResponseEntity<ExerciseResponse> update(@PathVariable Integer id, @RequestBody ExerciseRequest exerciseRequest) {
+    public ResponseEntity<ExerciseResponse> update(@PathVariable Integer id, @Valid @RequestBody ExerciseRequest exerciseRequest) {
         Exercise exercise = exerciseMapper.toEntity(exerciseRequest);
         exercise.setIdExercise(id);
         Exercise updatedExercise = exerciseService.updateExercise(exercise);

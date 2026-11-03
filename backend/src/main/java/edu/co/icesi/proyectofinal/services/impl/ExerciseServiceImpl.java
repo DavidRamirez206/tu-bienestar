@@ -1,5 +1,7 @@
 package edu.co.icesi.proyectofinal.services.impl;
 
+import edu.co.icesi.proyectofinal.exception.ConflictException;
+import edu.co.icesi.proyectofinal.repository.ProgressRepository;
 import edu.co.icesi.proyectofinal.entity.Exercise;
 import edu.co.icesi.proyectofinal.entity.User;
 import edu.co.icesi.proyectofinal.repository.ExerciseRepository;
@@ -12,9 +14,11 @@ import java.util.List;
 public class ExerciseServiceImpl implements ExerciseService {
 
     private final ExerciseRepository exerciseRepository;
+    private final ProgressRepository progressRepository;
 
-    public ExerciseServiceImpl(ExerciseRepository exerciseRepository) {
+    public ExerciseServiceImpl(ExerciseRepository exerciseRepository, ProgressRepository progressRepository) {
         this.exerciseRepository = exerciseRepository;
+        this.progressRepository = progressRepository;
     }
 
     @Override
@@ -62,7 +66,6 @@ public class ExerciseServiceImpl implements ExerciseService {
         existing.setDifficulty(exercise.getDifficulty());
         existing.setVideoUrl(exercise.getVideoUrl());
         existing.setPredefined(exercise.isPredefined());
-        existing.setUserExercise(exercise.getUserExercise());
         return exerciseRepository.save(existing);
     }
 
@@ -72,6 +75,10 @@ public class ExerciseServiceImpl implements ExerciseService {
         if(!exerciseRepository.existsById(id)){
             throw new RuntimeException("Exercise with id " + id +
                     " not found");
+        }
+        // El progreso guardado es historial del usuario: no se borra junto con el ejercicio.
+        if (!progressRepository.findByExerciseIdExercise(id).isEmpty()) {
+            throw new ConflictException("No se puede eliminar un ejercicio con progreso registrado");
         }
         exerciseRepository.deleteById(id);
     }
