@@ -11,6 +11,7 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
+import { logout as logoutRequest } from "../../services/AuthService";
 import GlobalSnackbar from "../../components/common/GlobalSnackbar";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useTheme } from "@mui/material/styles";
@@ -23,6 +24,7 @@ import DirectionsRunIcon from "@mui/icons-material/DirectionsRun";
 import EventIcon from "@mui/icons-material/Event";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import PersonIcon from "@mui/icons-material/Person";
+import LogoutIcon from "@mui/icons-material/Logout";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import React from "react";
 
@@ -91,7 +93,8 @@ const MainLayout = () => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logoutRequest();
     logout();
     navigate("/login");
   };
@@ -206,6 +209,17 @@ const MainLayout = () => {
       <Divider />
 
       <Box sx={{ p: 2 }}>
+        {isCollapsed && !isMobile ? (
+          <IconButton
+            aria-label="Cerrar sesión"
+            title="Cerrar sesión"
+            color="error"
+            onClick={handleLogout}
+            sx={{ display: "flex", mx: "auto" }}
+          >
+            <LogoutIcon />
+          </IconButton>
+        ) : (
         <Button
           fullWidth
           variant="outlined"
@@ -220,11 +234,11 @@ const MainLayout = () => {
             "&:hover": {
               borderWidth: 2,
             },
-            ...(isCollapsed && !isMobile && { display: 'none' })
           }}
         >
           Cerrar sesión
         </Button>
+        )}
       </Box>
     </>
   );

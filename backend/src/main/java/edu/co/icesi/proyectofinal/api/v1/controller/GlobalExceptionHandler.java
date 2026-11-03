@@ -2,7 +2,12 @@ package edu.co.icesi.proyectofinal.api.v1.controller;
 
 import edu.co.icesi.proyectofinal.exception.BadRequestException;
 import edu.co.icesi.proyectofinal.exception.ConflictException;
+import org.hibernate.exception.JDBCConnectionException;
+import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -62,6 +67,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
     public ResponseEntity<ErrorResponse> handleUnreadableRequest(Exception ex) {
         return error(HttpStatus.BAD_REQUEST, "La petición tiene datos con un formato inválido");
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex) {
+        return error(HttpStatus.CONFLICT, "La operación usa datos relacionados que no existen o que todavía están en uso");
+    }
+
+    @ExceptionHandler({CannotCreateTransactionException.class, DataAccessResourceFailureException.class, JDBCConnectionException.class, InternalAuthenticationServiceException.class})
+    public ResponseEntity<ErrorResponse> handleDatabaseUnavailable(Exception ex) {
+        return error(HttpStatus.SERVICE_UNAVAILABLE, "La base de datos no está disponible en este momento. Inténtalo de nuevo");
     }
 
     @ExceptionHandler(BadRequestException.class)

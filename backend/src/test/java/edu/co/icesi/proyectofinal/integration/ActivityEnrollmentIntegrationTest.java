@@ -47,6 +47,8 @@ class ActivityEnrollmentIntegrationTest {
     @Autowired private ActivityRepository activityRepository;
     @Autowired private ExerciseRepository exerciseRepository;
     @Autowired private ProgressRepository progressRepository;
+    @Autowired private edu.co.icesi.proyectofinal.repository.RoutineRepository routineRepository;
+    @Autowired private jakarta.persistence.EntityManager entityManager;
 
     private User juan;
     private User maria;
@@ -336,6 +338,54 @@ class ActivityEnrollmentIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].institutionalEmail").value(juan.getInstitutionalEmail()));
+    }
+
+    // ---------- Eliminar rutinas
+
+    private edu.co.icesi.proyectofinal.entity.Routine routineWithProgress(User owner) {
+        edu.co.icesi.proyectofinal.entity.Routine routine = new edu.co.icesi.proyectofinal.entity.Routine();
+        routine.setName("Rutina");
+        routine.setCreationDate(LocalDate.now());
+        routine.setUserRoutine(owner);
+        routine = routineRepository.save(routine);
+        Exercise exercise = new Exercise();
+        exercise.setName("Ejercicio");
+        exercise.setType("Fuerza");
+        exercise.setPredefined(true);
+        exercise = exerciseRepository.save(exercise);
+        Progress progress = new Progress();
+        progress.setUserProgress(owner);
+        progress.setExercise(exercise);
+        progress.setRoutine(routine);
+        progress.setDateLogged(LocalDateTime.now());
+        progressRepository.save(progress);
+        return routine;
+    }
+
+    private RequestPostProcessor routineUser(User user) {
+        user.setUserRoles(new java.util.ArrayList<>());
+        return SecurityMockMvcRequestPostProcessors.user(user.getInstitutionalEmail())
+                .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("DELETE_ROUTINE"));
+    }
+
+    @Test
+    void ownerDeletesRoutineAndProgressIsKept() throws Exception {
+        var routine = routineWithProgress(juan);
+        mockMvc.perform(delete("/api/v1/routines/" + routine.getIdRoutine()).with(routineUser(juan)))
+                .andExpect(status().isNoContent());
+        entityManager.flush();
+        entityManager.clear();
+        org.junit.jupiter.api.Assertions.assertFalse(routineRepository.existsById(routine.getIdRoutine()));
+        var kept = progressRepository.findByUserProgressIdUser(juan.getIdUser());
+        org.junit.jupiter.api.Assertions.assertEquals(1, kept.size());
+        org.junit.jupiter.api.Assertions.assertNull(kept.get(0).getRoutine());
+    }
+
+    @Test
+    void otherUserCannotDeleteRoutine() throws Exception {
+        var routine = routineWithProgress(juan);
+        mockMvc.perform(delete("/api/v1/routines/" + routine.getIdRoutine()).with(routineUser(maria)))
+                .andExpect(status().isForbidden());
     }
 
     // ---------- Rutas inexistentes

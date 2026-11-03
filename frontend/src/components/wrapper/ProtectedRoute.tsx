@@ -1,5 +1,7 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import useAuth from '../../hooks/useAuth';
 
 interface ProtectedRouteProps {
@@ -13,7 +15,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredRoles,
   children 
 }) => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isCheckingSession, user } = useAuth();
+
+  if (isCheckingSession) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <CircularProgress aria-label="Cargando" />
+      </Box>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to={redirectPath} replace />;

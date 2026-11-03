@@ -1,7 +1,9 @@
 package edu.co.icesi.proyectofinal.integration;
 
 import edu.co.icesi.proyectofinal.entity.User;
+import edu.co.icesi.proyectofinal.security.SessionCookie;
 import edu.co.icesi.proyectofinal.services.UserService;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import java.util.ArrayList;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -82,5 +85,39 @@ class AuthLoginIntegrationTest {
     void malformedTokenIsRejectedWithoutServerError() throws Exception {
         mockMvc.perform(get("/api/v1/ruta-protegida").header("Authorization", "Bearer token-invalido"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void loginStoresTheTokenInAnHttpOnlyCookie() throws Exception {
+        login(EMAIL, PASSWORD)
+                .andExpect(cookie().httpOnly(SessionCookie.NAME, true))
+                .andExpect(cookie().sameSite(SessionCookie.NAME, "Strict"))
+                .andExpect(cookie().path(SessionCookie.NAME, "/api"))
+                .andExpect(cookie().maxAge(SessionCookie.NAME, 3600));
+    }
+
+    @Test
+    void cookieIdentifiesTheSession() throws Exception {
+        Cookie session = login(EMAIL, PASSWORD).andReturn().getResponse().getCookie(SessionCookie.NAME);
+
+        mockMvc.perform(get("/api/v1/auth/me").cookie(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.institutionalEmail").value(EMAIL))
+                .andExpect(jsonPath("$.authorities").isArray());
+    }
+
+    @Test
+    void sessionIsRejectedWithoutACookieOrWithAnInvalidOne() throws Exception {
+        mockMvc.perform(get("/api/v1/auth/me")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/auth/me").cookie(new Cookie(SessionCookie.NAME, "no-es-un-token")))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void logoutRemovesTheCookieEvenWithAnInvalidToken() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/logout").cookie(new Cookie(SessionCookie.NAME, "no-es-un-token")))
+                .andExpect(status().isNoContent())
+                .andExpect(cookie().maxAge(SessionCookie.NAME, 0))
+                .andExpect(cookie().value(SessionCookie.NAME, ""));
     }
 }

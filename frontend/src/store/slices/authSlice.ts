@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { jwtDecode } from "jwt-decode";
 
 export interface User {
   idUser: number;
@@ -10,56 +9,17 @@ export interface User {
   authorities?: string[];
 }
 
-interface JwtPayload {
-  sub: string;
-  name?: string;
-  email?: string;
-  authorities?: string[];
-  exp?: number;
-  iat?: number;
-}
-
 interface AuthState {
-  token: string | null;
   user: User | null;
   isAuthenticated: boolean;
+  // Al abrir la aplicacion todavia no se sabe si la cookie de sesion sigue siendo valida.
+  isCheckingSession: boolean;
 }
 
-const getInfoFromToken = (
-  token: string,
-): { email: string; authorities: string[] } => {
-  try {
-    const decoded = jwtDecode<JwtPayload>(token);
-    return {
-      email: decoded.sub,
-      authorities: decoded.authorities ?? [],
-    };
-  } catch {
-    return { email: "", authorities: [] };
-  }
-};
-
-const getStoredUser = (): User | null => {
-  const raw = localStorage.getItem("user");
-
-  if (!raw || raw === "undefined" || raw === "null") {
-    return null;
-  }
-
-  try {
-    return JSON.parse(raw) as User;
-  } catch {
-    return null;
-  }
-};
-
-const initialToken = localStorage.getItem("token");
-const initialUser = getStoredUser();
-
 const initialState: AuthState = {
-  token: initialToken,
-  user: initialUser,
-  isAuthenticated: !!initialToken,
+  user: null,
+  isAuthenticated: false,
+  isCheckingSession: true,
 };
 
 const authSlice = createSlice({
@@ -69,31 +29,26 @@ const authSlice = createSlice({
     login: (
       state,
       action: PayloadAction<{
-        token: string;
-        user?: Omit<User, "authorities">;
+        user: Omit<User, "authorities">;
+        authorities: string[];
       }>,
     ) => {
-      const { token, user } = action.payload;
-      const { email, authorities } = getInfoFromToken(token);
+      const { user, authorities } = action.payload;
 
-      state.token = token;
       state.user = {
-        idUser: user?.idUser ?? 0,
-        firstName: user?.firstName ?? '',
-        lastName: user?.lastName ?? '',
-        institutionalEmail: user?.institutionalEmail ?? email,
+        idUser: user.idUser,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        institutionalEmail: user.institutionalEmail,
         authorities,
       };
       state.isAuthenticated = true;
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(state.user));
+      state.isCheckingSession = false;
     },
     logout: (state) => {
-      state.token = null;
       state.user = null;
       state.isAuthenticated = false;
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      state.isCheckingSession = false;
     },
   },
 });

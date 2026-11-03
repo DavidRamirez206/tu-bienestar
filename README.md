@@ -23,7 +23,7 @@ cd backend && ./mvnw spring-boot:run   # http://localhost:8080/swagger-ui.html
 cd frontend && npm install && npm run dev   # http://localhost:6573
 ```
 
-Con Docker: `docker compose up --build` (aplicacion en http://localhost:8090).
+Con Docker: `docker compose up --build` (aplicacion en http://localhost:8081).
 
 ## Forma de trabajo
 

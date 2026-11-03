@@ -39,8 +39,8 @@ const LoginScreen: React.FC = () => {
             return;
         }
 
-        // The backend returns the token and user data
-        login(result.data.token, result.data.user);
+        // El token queda en una cookie HttpOnly: aqui solo se guardan los datos del usuario.
+        login(result.data.user, result.data.authorities);
 
         navigate('/');
     };

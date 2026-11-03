@@ -6,18 +6,24 @@ const baseURL = import.meta.env.VITE_API_HOST || '/';
 const axiosClient = axios.create({
     baseURL,
     headers: { 'Content-Type': 'application/json' },
+    // La sesion viaja en una cookie HttpOnly que JavaScript no puede leer.
+    withCredentials: true,
 });
 
-axiosClient.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers = config.headers || {};
-            config.headers.Authorization = `Bearer ${token}`;
+let onUnauthorized = () => {};
+
+export const setUnauthorizedHandler = (handler: () => void) => {
+    onUnauthorized = handler;
+};
+
+axiosClient.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+            onUnauthorized();
         }
-        return config;
-    },
-    (error) => Promise.reject(error)
+        return Promise.reject(error);
+    }
 );
 
 export async function safeRequest<T>(request: AxiosPromise<T>) {

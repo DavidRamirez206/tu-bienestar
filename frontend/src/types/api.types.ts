@@ -7,6 +7,12 @@ export type AuthRequest = {
 export interface AuthResponse {
   token: string;
   user: UserResponse;
+  authorities: string[];
+}
+
+export interface SessionResponse {
+  user: UserResponse;
+  authorities: string[];
 }
 
 export type RegisterRequest = {
