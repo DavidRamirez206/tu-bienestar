@@ -116,6 +116,14 @@ const LoginScreen: React.FC = () => {
                         Iniciar sesión
                     </Button>
 
+                    <Button
+                        onClick={() => navigate('/register')}
+                        fullWidth
+                        sx={{ textTransform: 'none' }}
+                    >
+                        ¿No tienes cuenta? Regístrate
+                    </Button>
+
                     <Snackbar
                         open={error !== null}
                         autoHideDuration={4000}

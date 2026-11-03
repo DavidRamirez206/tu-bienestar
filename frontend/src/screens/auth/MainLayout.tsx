@@ -19,6 +19,10 @@ import CssBaseline from "@mui/material/CssBaseline";
 
 import HomeIcon from "@mui/icons-material/Home";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
+import DirectionsRunIcon from "@mui/icons-material/DirectionsRun";
+import EventIcon from "@mui/icons-material/Event";
+import ShowChartIcon from "@mui/icons-material/ShowChart";
+import PersonIcon from "@mui/icons-material/Person";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import React from "react";
 
@@ -44,6 +48,28 @@ const navItems: NavItem[] = [
     label: "Rutinas",
     path: "/routines",
     icon: <FitnessCenterIcon />,
+  },
+  {
+    label: "Ejercicios",
+    path: "/exercises",
+    icon: <DirectionsRunIcon />,
+    requiredAuthorities: ["LIST_EXERCISE"],
+  },
+  {
+    label: "Actividades",
+    path: "/activities",
+    icon: <EventIcon />,
+    requiredAuthorities: ["LIST_ACTIVITY"],
+  },
+  {
+    label: "Progreso",
+    path: "/progress",
+    icon: <ShowChartIcon />,
+  },
+  {
+    label: "Mi perfil",
+    path: "/profile",
+    icon: <PersonIcon />,
   },
 ];
 
@@ -118,7 +144,10 @@ const MainLayout = () => {
             return (
               <React.Fragment key={item.path}>
                   <ListItemButton
-                  onClick={() => navigate(item.path)}
+                  onClick={() => {
+                    navigate(item.path);
+                    setMobileOpen(false);
+                  }}
                   selected={selected}
                   sx={{
                       borderRadius: 2,
@@ -233,19 +262,15 @@ const MainLayout = () => {
 
       <Box component="main" sx={{ 
         flexGrow: 1, 
+        minWidth: 0,
         p: { xs: 2, md: 4 }, 
         overflowX: "hidden",
-        transition: theme.transitions.create('margin', {
-          easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.enteringScreen,
-        }),
-        marginLeft: isMobile ? 0 : `-${DRAWER_WIDTH_FULL - drawerWidth}px`
       }}>
         <Paper
           elevation={0}
           sx={{
             position: "sticky",
-            top: 24,
+            top: { xs: 8, md: 24 },
             zIndex: 1100, // Higher than drawer
             borderRadius: 4,
             p: { xs: 2, md: 3 },
@@ -264,17 +289,17 @@ const MainLayout = () => {
               alignItems: "center",
             }}
           >
-            <Stack direction="row" sx={{ alignItems: 'center' }} spacing={1}>
+            <Stack direction="row" sx={{ alignItems: 'center', minWidth: 0 }} spacing={1}>
               <IconButton
                 color="inherit"
                 aria-label="open drawer"
                 onClick={handleDrawerToggle}
                 edge="start"
-                sx={{ mr: 2 }}
+                sx={{ mr: { xs: 0, md: 2 } }}
               >
                 <MenuIcon />
               </IconButton>
-              <Box>
+              <Box sx={{ minWidth: 0 }}>
                 <Typography
                   variant="h4"
                   color="text.primary"
@@ -287,7 +312,7 @@ const MainLayout = () => {
                   <Typography
                     variant="body2"
                     color="text.secondary"
-                    sx={{ mt: 0.5, fontWeight: 500 }}
+                    sx={{ mt: 0.5, fontWeight: 500, overflowWrap: "anywhere" }}
                   >
                     Sesión iniciada: {user?.institutionalEmail}
                   </Typography>
