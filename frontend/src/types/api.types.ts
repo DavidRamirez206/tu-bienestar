@@ -50,14 +50,22 @@ export interface ActivityResponse {
   startDate: string; // LocalDate
   endDate: string; // LocalDate
   spaceId?: number;
+  spaceName?: string;
+  spaceLocation?: string;
 }
 
 export type ActivityRequest = {
   name: string;
-  description?: string;
+  description: string;
   startDate: string;
   endDate: string;
-  spaceId?: number;
+  spaceId: number;
+};
+
+export type ActivityFilters = {
+  upcoming?: boolean;
+  from?: string;
+  to?: string;
 };
 
 export interface ExerciseResponse {
@@ -213,9 +221,8 @@ export type AssignmentRequest = {
 export interface EnrollmentResponse {
   userId: number;
   activityId: number;
-  activityName?: string;
   enrollmentDate: string; // LocalDate
-  activityEndDate?: string; // LocalDate
+  activity: ActivityResponse;
 }
 
 export type EnrollmentRequest = {
