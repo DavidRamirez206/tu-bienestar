@@ -19,6 +19,12 @@ export const createProgress = async (request: ProgressRequest) => {
     );
 };
 
+export const updateProgress = async (id: number, request: ProgressRequest) => {
+    return safeRequest<ProgressResponse>(
+        axiosClient.put(`/api/v1/progress/${id}`, request)
+    );
+};
+
 export const deleteProgress = async (id: number) => {
     return safeRequest<void>(
         axiosClient.delete(`/api/v1/progress/${id}`)
