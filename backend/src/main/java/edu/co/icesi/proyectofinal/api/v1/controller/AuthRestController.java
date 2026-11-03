@@ -4,11 +4,13 @@ import edu.co.icesi.proyectofinal.api.v1.dto.AuthRequest;
 import edu.co.icesi.proyectofinal.api.v1.dto.AuthResponse;
 import edu.co.icesi.proyectofinal.api.v1.dto.RegisterRequest;
 import edu.co.icesi.proyectofinal.api.v1.dto.RegisterResponse;
+import edu.co.icesi.proyectofinal.api.v1.dto.SessionResponse;
 import edu.co.icesi.proyectofinal.api.v1.dto.UserResponse;
 import edu.co.icesi.proyectofinal.api.v1.mapper.UserMapper;
 import edu.co.icesi.proyectofinal.entity.User;
 import edu.co.icesi.proyectofinal.security.CustomUserDetailService;
 import edu.co.icesi.proyectofinal.security.JwtService;
+import edu.co.icesi.proyectofinal.security.SessionCookie;
 import edu.co.icesi.proyectofinal.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,15 +18,21 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -36,17 +44,20 @@ public class AuthRestController {
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final UserMapper userMapper;
+    private final SessionCookie sessionCookie;
 
     public AuthRestController(JwtService jwtService,
                               CustomUserDetailService customUserDetailService,
                               AuthenticationManager authenticationManager,
                               UserService userService,
-                              UserMapper userMapper) {
+                              UserMapper userMapper,
+                              SessionCookie sessionCookie) {
         this.jwtService = jwtService;
         this.customUserDetailService = customUserDetailService;
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.userMapper = userMapper;
+        this.sessionCookie = sessionCookie;
     }
 
     @Operation(
@@ -73,16 +84,52 @@ public class AuthRestController {
         UserDetails appUser = customUserDetailService.loadUserByUsername(authRequest.getUsername());
         String token = jwtService.generateToken(appUser);
 
-        User user = userService.getUserByEmail(authRequest.getUsername());
-        UserResponse userResponse = new UserResponse(
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, sessionCookie.create(token))
+                .body(new AuthResponse(token, findUser(authRequest.getUsername()), authorities(appUser)));
+    }
+
+    @Operation(
+            summary = "Current session",
+            description = "Returns the authenticated user and authorities",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Active session"),
+                    @ApiResponse(responseCode = "401", description = "No active session", content = @Content)
+            }
+    )
+    @GetMapping("/me")
+    public ResponseEntity<SessionResponse> me(Authentication authentication) {
+        return ResponseEntity.ok(new SessionResponse(
+                findUser(authentication.getName()),
+                authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList()
+        ));
+    }
+
+    @Operation(
+            summary = "User Logout",
+            description = "Removes the session cookie",
+            responses = {@ApiResponse(responseCode = "204", description = "Session closed")}
+    )
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout() {
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.SET_COOKIE, sessionCookie.clear())
+                .build();
+    }
+
+    private UserResponse findUser(String email) {
+        User user = userService.getUserByEmail(email);
+        return new UserResponse(
                 user.getIdUser(),
                 user.getFirstName(),
                 user.getLastName(),
                 user.getInstitutionalEmail(),
                 user.getAge()
         );
+    }
 
-        return ResponseEntity.ok(new AuthResponse(token, userResponse));
+    private List<String> authorities(UserDetails userDetails) {
+        return userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
     }
 
     @Operation(

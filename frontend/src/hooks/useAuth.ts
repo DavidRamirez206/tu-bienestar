@@ -8,12 +8,12 @@ import {
 
 export default function useAuth() {
   const dispatch = useAppDispatch();
-  const { token, user, isAuthenticated } = useAppSelector(
+  const { user, isAuthenticated, isCheckingSession } = useAppSelector(
     (state) => state.auth,
   );
 
-  const login = (token: string, userData?: Omit<User, "authorities">) => {
-    dispatch(loginAction({ token, user: userData }));
+  const login = (userData: Omit<User, "authorities">, authorities: string[]) => {
+    dispatch(loginAction({ user: userData, authorities }));
   };
 
   const logout = () => {
@@ -21,9 +21,9 @@ export default function useAuth() {
   };
 
   return {
-    token,
     user,
     isAuthenticated,
+    isCheckingSession,
     login,
     logout,
   };
