@@ -26,8 +26,9 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
-import { getAllProgress, createProgress, deleteProgress } from '../../services/ProgressService';
+import { getAllProgress, createProgress, updateProgress, deleteProgress } from '../../services/ProgressService';
 import { getAllExercises } from '../../services/ExerciseService';
 import type { ProgressResponse, ProgressRequest, ExerciseResponse } from '../../types/api.types';
 import useAuth from '../../hooks/useAuth';
@@ -42,6 +43,7 @@ const ProgressScreen: React.FC = () => {
   // Dialog state
   const [open, setOpen] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<ProgressRequest>({
     userId: user?.idUser || 0,
     exerciseId: 0,
@@ -103,6 +105,24 @@ const ProgressScreen: React.FC = () => {
       setNumber: 1
     });
     setFormErrors({});
+    setEditingId(null);
+    setOpen(true);
+  };
+
+  const handleEdit = (entry: ProgressResponse) => {
+    setFormData({
+      userId: entry.userId,
+      exerciseId: entry.exerciseId,
+      routineId: entry.routineId,
+      dateLogged: entry.dateLogged,
+      reps: entry.reps,
+      weightKg: entry.weightKg,
+      durationMin: entry.durationMin,
+      effortLevel: entry.effortLevel,
+      setNumber: entry.setNumber
+    });
+    setFormErrors({});
+    setEditingId(entry.idProgress);
     setOpen(true);
   };
 
@@ -139,7 +159,10 @@ const ProgressScreen: React.FC = () => {
       return;
     }
 
-    const result = await createProgress(formData);
+    const result = editingId === null
+      ? await createProgress(formData)
+      : await updateProgress(editingId, formData);
+
     if (result.error) {
       alert(result.message);
     } else {
@@ -282,9 +305,14 @@ const ProgressScreen: React.FC = () => {
                         <ListItem 
                             sx={{ px: 3, py: 2 }}
                             secondaryAction={
-                                <IconButton edge="end" color="error" onClick={() => handleDelete(entry.idProgress)}>
-                                    <DeleteIcon />
-                                </IconButton>
+                                <>
+                                    <IconButton color="primary" onClick={() => handleEdit(entry)}>
+                                        <EditIcon />
+                                    </IconButton>
+                                    <IconButton edge="end" color="error" onClick={() => handleDelete(entry.idProgress)}>
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </>
                             }
                         >
                             <ListItemText 
@@ -340,11 +368,15 @@ const ProgressScreen: React.FC = () => {
         maxWidth="xs"
         sx={{ '& .MuiDialog-paper': { borderRadius: 3 } }}
       >
-        <DialogTitle sx={{ fontWeight: 'bold' }}>Registrar Progreso</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>
+          {editingId === null ? 'Registrar Progreso' : 'Editar Registro'}
+        </DialogTitle>
         <DialogContent dividers>
           <Stack spacing={3} sx={{ mt: 1 }}>
             <Autocomplete
                 options={exercises}
+                value={exerciseMap.get(formData.exerciseId) ?? null}
+                isOptionEqualToValue={(option, selected) => option.idExercise === selected.idExercise}
                 getOptionLabel={(option) => `${option.name} (${option.type})`}
                 renderInput={(params) => (
                   <TextField
@@ -404,7 +436,7 @@ const ProgressScreen: React.FC = () => {
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={handleClose} sx={{ fontWeight: 600 }}>Cancelar</Button>
           <Button onClick={handleSubmit} variant="contained" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 3 }}>
-            Guardar Registro
+            {editingId === null ? 'Guardar Registro' : 'Guardar Cambios'}
           </Button>
         </DialogActions>
       </Dialog>
