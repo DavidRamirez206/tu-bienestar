@@ -8,15 +8,19 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.jspecify.annotations.NonNull;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.TransactionException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 
 @Component
@@ -49,6 +53,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Token invalido, vencido o de un usuario que ya no existe: la peticion sigue sin
             // autenticar y Spring Security responde 401.
             SecurityContextHolder.clearContext();
+        } catch (DataAccessException | TransactionException ex) {
+            // Sin base de datos no se puede validar la sesion. No es un problema del usuario.
+            SecurityContextHolder.clearContext();
+            response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            response.getWriter().write("{\"status\":503,\"message\":\"La base de datos no está disponible en este momento. Inténtalo de nuevo\"}");
+            return;
         }
 
         filterChain.doFilter(request, response);
