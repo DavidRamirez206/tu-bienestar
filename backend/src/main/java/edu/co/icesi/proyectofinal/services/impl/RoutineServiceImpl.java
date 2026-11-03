@@ -8,6 +8,7 @@ import edu.co.icesi.proyectofinal.entity.keys.RoutineExerciseId;
 import edu.co.icesi.proyectofinal.repository.ExerciseRepository;
 import edu.co.icesi.proyectofinal.repository.RoutineRepository;
 import edu.co.icesi.proyectofinal.services.RoutineService;
+import edu.co.icesi.proyectofinal.repository.ProgressRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -21,11 +22,14 @@ public class RoutineServiceImpl implements RoutineService {
 
     private final RoutineRepository routineRepository;
     private final ExerciseRepository exerciseRepository;
+    private final ProgressRepository progressRepository;
 
     public RoutineServiceImpl(RoutineRepository routineRepository,
-                              ExerciseRepository exerciseRepository) {
+                              ExerciseRepository exerciseRepository,
+                              ProgressRepository progressRepository) {
         this.routineRepository = routineRepository;
         this.exerciseRepository = exerciseRepository;
+        this.progressRepository = progressRepository;
     }
 
     @Override
@@ -81,12 +85,16 @@ public class RoutineServiceImpl implements RoutineService {
     }
 
     @Override
+    @Transactional
     public void delete(Integer id) {
 
         if(!routineRepository.existsById(id)){
             throw new RuntimeException("Routine with id " + id +
                     " not found");
         }
+
+        // El progreso es historial del usuario: se conserva aunque la rutina desaparezca.
+        progressRepository.findByRoutineIdRoutine(id).forEach(progress -> progress.setRoutine(null));
 
         routineRepository.deleteById(id);
     }

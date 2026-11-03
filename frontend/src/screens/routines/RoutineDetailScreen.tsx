@@ -16,9 +16,10 @@ import {
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import { getRoutineById, updateRoutine } from '../../services/RoutineService';
+import { deleteRoutine, getRoutineById, updateRoutine } from '../../services/RoutineService';
 import { createExercise, getAllExercises } from '../../services/ExerciseService';
 import { getRoutineExercises, replaceRoutineExercises } from '../../services/RoutineExerciseService';
 import type {
@@ -30,6 +31,7 @@ import type {
 } from '../../types/api.types';
 import { canPublishRoutines, mapDraftToRoutineExerciseRequest, type RoutineExerciseDraft } from '../../utils/routine.utils';
 import RoutineFormDialog from '../../components/routines/RoutineFormDialog';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 import useAuth from '../../hooks/useAuth';
 import { useAppDispatch } from '../../hooks/useDispatch';
 import { showSnackbar } from '../../store/slices/uiSlice';
@@ -43,6 +45,7 @@ const RoutineDetailScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openForm, setOpenForm] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { user } = useAuth();
@@ -128,17 +131,36 @@ const RoutineDetailScreen: React.FC = () => {
   }
 
   const canEdit = routine.userId === user?.idUser;
+  const canDelete = canEdit || (user?.authorities?.includes('ADMIN') ?? false);
+
+  const handleDelete = async () => {
+    const res = await deleteRoutine(routineId);
+    setOpenDelete(false);
+    if (res.error) {
+      dispatch(showSnackbar({ message: res.message || 'No se pudo eliminar la rutina.', severity: 'error' }));
+      return;
+    }
+    dispatch(showSnackbar({ message: 'Rutina eliminada.', severity: 'success' }));
+    navigate('/routines');
+  };
   const sortedItems = [...items].sort((a, b) => (a.exerciseOrder ?? 0) - (b.exerciseOrder ?? 0));
 
   return (
     <Box>
       <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         {backButton}
-        {canEdit && (
-          <Button variant="contained" startIcon={<EditIcon />} onClick={() => setOpenForm(true)}>
-            Editar
-          </Button>
-        )}
+        <Stack direction="row" spacing={1}>
+          {canDelete && (
+            <Button color="error" startIcon={<DeleteIcon />} onClick={() => setOpenDelete(true)}>
+              Eliminar
+            </Button>
+          )}
+          {canEdit && (
+            <Button variant="contained" startIcon={<EditIcon />} onClick={() => setOpenForm(true)}>
+              Editar
+            </Button>
+          )}
+        </Stack>
       </Stack>
 
       <Paper elevation={3} sx={{ p: { xs: 2.5, md: 4 }, borderRadius: 4 }}>
@@ -186,6 +208,15 @@ const RoutineDetailScreen: React.FC = () => {
           <Alert severity="warning">Esta rutina aún no tiene ejercicios.</Alert>
         )}
       </Paper>
+
+      <ConfirmDialog
+        open={openDelete}
+        title="Eliminar rutina"
+        message={`¿Seguro que quieres eliminar "${routine.name}"? Tu progreso registrado se conserva.`}
+        confirmLabel="Eliminar"
+        onConfirm={() => void handleDelete()}
+        onClose={() => setOpenDelete(false)}
+      />
 
       {openForm && (
         <RoutineFormDialog
