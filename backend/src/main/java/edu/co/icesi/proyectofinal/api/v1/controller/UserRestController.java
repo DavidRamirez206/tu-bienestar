@@ -61,9 +61,11 @@ public class UserRestController {
     )
     @GetMapping
     @PreAuthorize("hasAuthority('LIST_USER')")
-    public ResponseEntity<List<UserResponse>> getAll() {
+    public ResponseEntity<List<UserResponse>> getAll(Principal principal) {
         List<User> users = userService.getUsers();
+        // Los datos personales solo los ve su dueno o quien tenga permiso sobre ellos.
         List<UserResponse> userResponses = users.stream()
+                .filter(user -> canAccess(user.getIdUser(), principal))
                 .map(userMapper::toResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(userResponses);

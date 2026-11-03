@@ -1,5 +1,11 @@
 package edu.co.icesi.proyectofinal.api.v1.controller;
 
+import edu.co.icesi.proyectofinal.exception.BadRequestException;
+import edu.co.icesi.proyectofinal.exception.ConflictException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import edu.co.icesi.proyectofinal.api.v1.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +47,35 @@ public class GlobalExceptionHandler {
                 new ErrorResponse(400, message, LocalDateTime.now()),
                 HttpStatus.BAD_REQUEST
         );
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex) {
+        return error(HttpStatus.NOT_FOUND, "Recurso no encontrado");
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        return error(HttpStatus.METHOD_NOT_ALLOWED, "Método no permitido");
+    }
+
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ErrorResponse> handleUnreadableRequest(Exception ex) {
+        return error(HttpStatus.BAD_REQUEST, "La petición tiene datos con un formato inválido");
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex) {
+        return error(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex) {
+        return error(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    private ResponseEntity<ErrorResponse> error(HttpStatus status, String message) {
+        return new ResponseEntity<>(new ErrorResponse(status.value(), message, LocalDateTime.now()), status);
     }
 
     @ExceptionHandler(RuntimeException.class)
