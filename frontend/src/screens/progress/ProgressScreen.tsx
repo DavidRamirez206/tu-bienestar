@@ -41,6 +41,7 @@ const ProgressScreen: React.FC = () => {
 
   // Dialog state
   const [open, setOpen] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState<ProgressRequest>({
     userId: user?.idUser || 0,
     exerciseId: 0,
@@ -101,14 +102,40 @@ const ProgressScreen: React.FC = () => {
       effortLevel: 5,
       setNumber: 1
     });
+    setFormErrors({});
     setOpen(true);
   };
 
   const handleClose = () => setOpen(false);
 
+  const validateForm = (data: ProgressRequest): Record<string, string> => {
+    const errors: Record<string, string> = {};
+
+    if (!data.exerciseId) {
+      errors.exerciseId = 'Debe seleccionar un ejercicio';
+    }
+    if (typeof data.reps === 'number' && data.reps < 0) {
+      errors.reps = 'Las repeticiones no pueden ser negativas';
+    }
+    if (typeof data.weightKg === 'number' && data.weightKg < 0) {
+      errors.weightKg = 'El peso no puede ser negativo';
+    }
+    if (typeof data.durationMin === 'number' && data.durationMin < 0) {
+      errors.durationMin = 'La duracion no puede ser negativa';
+    }
+    if (typeof data.effortLevel !== 'number') {
+      errors.effortLevel = 'El nivel de esfuerzo es obligatorio';
+    } else if (data.effortLevel < 1 || data.effortLevel > 10) {
+      errors.effortLevel = 'El nivel de esfuerzo debe estar entre 1 y 10';
+    }
+
+    return errors;
+  };
+
   const handleSubmit = async () => {
-    if (!formData.exerciseId) {
-      alert('Debe seleccionar un ejercicio');
+    const errors = validateForm(formData);
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) {
       return;
     }
 
@@ -319,7 +346,15 @@ const ProgressScreen: React.FC = () => {
             <Autocomplete
                 options={exercises}
                 getOptionLabel={(option) => `${option.name} (${option.type})`}
-                renderInput={(params) => <TextField {...params} label="Seleccionar Ejercicio" fullWidth />}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Seleccionar Ejercicio"
+                    fullWidth
+                    error={Boolean(formErrors.exerciseId)}
+                    helperText={formErrors.exerciseId}
+                  />
+                )}
                 onChange={(_, newValue) => setFormData({ ...formData, exerciseId: newValue?.idExercise || 0 })}
             />
             
@@ -329,6 +364,8 @@ const ProgressScreen: React.FC = () => {
                     type="number"
                     fullWidth
                     value={formData.reps || ''}
+                    error={Boolean(formErrors.reps)}
+                    helperText={formErrors.reps}
                     onChange={(e) => setFormData({ ...formData, reps: Number(e.target.value) })}
                 />
                 <TextField
@@ -336,6 +373,8 @@ const ProgressScreen: React.FC = () => {
                     type="number"
                     fullWidth
                     value={formData.weightKg || ''}
+                    error={Boolean(formErrors.weightKg)}
+                    helperText={formErrors.weightKg}
                     onChange={(e) => setFormData({ ...formData, weightKg: Number(e.target.value) })}
                 />
             </Stack>
@@ -345,6 +384,8 @@ const ProgressScreen: React.FC = () => {
                 type="number"
                 fullWidth
                 value={formData.durationMin || ''}
+                error={Boolean(formErrors.durationMin)}
+                helperText={formErrors.durationMin}
                 onChange={(e) => setFormData({ ...formData, durationMin: Number(e.target.value) })}
             />
             
@@ -354,6 +395,8 @@ const ProgressScreen: React.FC = () => {
                 fullWidth
                 slotProps={{ htmlInput: { min: 1, max: 10 } }}
                 value={formData.effortLevel}
+                error={Boolean(formErrors.effortLevel)}
+                helperText={formErrors.effortLevel}
                 onChange={(e) => setFormData({ ...formData, effortLevel: Number(e.target.value) })}
             />
           </Stack>
