@@ -1,0 +1,2125 @@
+{
+	"info": {
+		"_postman_id": "12a5eba5-50a3-4577-8d3e-2a935a2ced97",
+		"name": "Proyecto_compunet",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49655755",
+		"_collection_link": "https://go.postman.co/collection/49655755-12a5eba5-50a3-4577-8d3e-2a935a2ced97?source=collection_link"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "[s1] POST - Login trainee user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"[s1] Response has token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.token).to.not.be.null;",
+									"    pm.expect(jsonData.token).to.not.be.undefined;",
+									"    pm.expect(jsonData.token).to.be.a('string');",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.environment.set(\"basicToken\", jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"juan.perez@icesi.edu.co\",\r\n    \"password\": \"pass123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] POST - Login admin user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"[s1] Response has token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.token).to.not.be.null;",
+									"    pm.expect(jsonData.token).to.not.be.undefined;",
+									"    pm.expect(jsonData.token).to.be.a('string');",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"admin@icesi.edu.co\",\r\n    \"password\": \"adminpass\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] POST - Login wrong password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"pm.test(\"[s1] Message does not reveal which credential failed\", function () {",
+									"    pm.expect(pm.response.json().message).to.eql(\"Usuario o contraseña incorrectos\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"juan.perez@icesi.edu.co\",\n  \"password\": \"mala-clave\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] POST - Register user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"[s1] Created user is not null\", function () {",
+									"    pm.expect(pm.response.json()).to.not.be.null;",
+									"});",
+									"",
+									"pm.test(\"[s1] Created user has id\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.idUser).to.not.be.null;",
+									"    pm.expect(jsonData.idUser).to.not.be.undefined;",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.idUser) {",
+									"    pm.environment.set(\"testUserId\", jsonData.idUser);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"//generate unique email with timestamp",
+									"const timestamp = Date.now();",
+									"const email = `testuser${timestamp}@icesi.edu.co`;",
+									"pm.environment.set(\"testEmail\", email);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"firstName\": \"Test\",\r\n  \"lastName\": \"User\",\r\n  \"institutionalEmail\": \"{{testEmail}}\",\r\n  \"password\": \"password123\",\r\n  \"age\": 25\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] POST - Register with invalid email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 400 for invalid email domain\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"[s1] Response indicates validation error\", function () {",
+									"    pm.expect(pm.response.json()).to.not.be.null;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"firstName\": \"Test\",\r\n  \"lastName\": \"User\",\r\n  \"institutionalEmail\": \"testuser@gmail.com\",\r\n  \"password\": \"password123\",\r\n  \"age\": 25\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] POST - Register with null duplicated email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status is 400 for duplicate email\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"[s1] Response body is not null\", function () {",
+									"    pm.expect(pm.response.json()).to.not.be.null;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"firstName\": \"Test\",\r\n  \"lastName\": \"User\",\r\n  \"institutionalEmail\": \"{{testEmail}}\",\r\n  \"password\": \"password123\",\r\n  \"age\": 25\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "users",
+			"item": [
+				{
+					"name": "[s1] GET - Get User By Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"[s1] User has id field\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.idUser).to.not.be.null;",
+									"    pm.expect(jsonData.idUser).to.not.be.undefined;",
+									"});",
+									"",
+									"pm.test(\"[s1] User has institutionalEmail field\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.institutionalEmail).to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] PUT - Update test user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"[s1] Updated firstName matches\", function () {",
+									"    pm.expect(pm.response.json().firstName).to.eql(\"Updated\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"firstName\": \"Updated\",\r\n  \"lastName\": \"User\",\r\n  \"institutionalEmail\": \"{{testEmail}}\",\r\n  \"age\": 30\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/{{testUserId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{testUserId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] GET - Protected route without token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status 401 or 403 without session\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] GET - Other user profile as trainee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 403\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{basicToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] GET - User list as trainee only shows himself",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"[s1] Only one user is returned\", function () {",
+									"    pm.expect(pm.response.json().length).to.eql(1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{basicToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "spaces",
+			"item": [
+				{
+					"name": "[s1] POST - Create Space",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"[s1] Response has idSpace\", function () {",
+									"    var d = pm.response.json();",
+									"    pm.expect(d.idSpace).to.not.be.null;",
+									"    pm.expect(d.idSpace).to.not.be.undefined;",
+									"});",
+									"var d = pm.response.json();",
+									"if (d.idSpace) { pm.environment.set(\"spaceId\", d.idSpace); }"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Sala Postman\",\n  \"capacity\": 20,\n  \"location\": \"Edificio de prueba\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spaces",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spaces"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] GET - Get All Spaces",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spaces",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spaces"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "exercises",
+			"item": [
+				{
+					"name": "[s1] POST - Create Exercise",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"[s1] Response has idExercise\", function () {",
+									"    var d = pm.response.json();",
+									"    pm.expect(d.idExercise).to.not.be.null;",
+									"    pm.expect(d.idExercise).to.not.be.undefined;",
+									"});",
+									"var d = pm.response.json();",
+									"if (d.idExercise) { pm.environment.set(\"exerciseId\", d.idExercise); }"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Ejercicio Postman\",\n  \"description\": \"Creado por la coleccion\",\n  \"type\": \"Fuerza\",\n  \"difficulty\": \"Baja\",\n  \"durationMin\": 5,\n  \"videoUrl\": \"https://www.youtube.com/watch?v=IODxDxX7oi4\",\n  \"isPredefined\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/exercises",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exercises"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] PUT - Update Exercise",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"[s1] Response has idExercise\", function () {",
+									"    var d = pm.response.json();",
+									"    pm.expect(d.idExercise).to.not.be.null;",
+									"    pm.expect(d.idExercise).to.not.be.undefined;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Ejercicio Postman editado\",\n  \"description\": \"Creado por la coleccion\",\n  \"type\": \"Fuerza\",\n  \"difficulty\": \"Baja\",\n  \"durationMin\": 5,\n  \"videoUrl\": \"https://www.youtube.com/watch?v=IODxDxX7oi4\",\n  \"isPredefined\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/exercises/{{exerciseId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exercises",
+								"{{exerciseId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] GET - Exercise detail has catalog fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"[s1] Has name, type, description, duration, difficulty and video\", function () {",
+									"    pm.expect(pm.response.json()).to.include.keys(\"name\",\"type\",\"description\",\"durationMin\",\"difficulty\",\"videoUrl\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{basicToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/exercises/{{exerciseId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exercises",
+								"{{exerciseId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] POST - Exercise without mandatory data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"pm.test(\"[s1] Message says what is missing\", function () {",
+									"    pm.expect(pm.response.json().message).to.include(\"nombre\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/exercises",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exercises"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"Fuerza\",\n  \"isPredefined\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] PUT - Exercise as trainee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 403\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{basicToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/exercises/{{exerciseId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exercises",
+								"{{exerciseId}}"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Ejercicio Postman\",\n  \"description\": \"Creado por la coleccion\",\n  \"type\": \"Fuerza\",\n  \"difficulty\": \"Baja\",\n  \"durationMin\": 5,\n  \"videoUrl\": \"https://www.youtube.com/watch?v=IODxDxX7oi4\",\n  \"isPredefined\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "activities",
+			"item": [
+				{
+					"name": "[s1] POST - Create Activity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"[s1] Response has idActivity\", function () {",
+									"    var d = pm.response.json();",
+									"    pm.expect(d.idActivity).to.not.be.null;",
+									"    pm.expect(d.idActivity).to.not.be.undefined;",
+									"});",
+									"var d = pm.response.json();",
+									"if (d.idActivity) { pm.environment.set(\"activityId\", d.idActivity); }"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Evento Postman\",\n  \"description\": \"Evento creado por la coleccion\",\n  \"startDate\": \"2035-01-10\",\n  \"endDate\": \"2035-01-11\",\n  \"spaceId\": {{spaceId}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/activities",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] PUT - Update Activity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"[s1] Response has idActivity\", function () {",
+									"    var d = pm.response.json();",
+									"    pm.expect(d.idActivity).to.not.be.null;",
+									"    pm.expect(d.idActivity).to.not.be.undefined;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Evento Postman editado\",\n  \"description\": \"Evento creado por la coleccion\",\n  \"startDate\": \"2035-01-10\",\n  \"endDate\": \"2035-01-11\",\n  \"spaceId\": {{spaceId}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/activities/{{activityId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"activities",
+								"{{activityId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] GET - Upcoming hides finished events",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"[s1] No finished event appears\", function () {",
+									"    var today = new Date().toISOString().slice(0, 10);",
+									"    pm.response.json().forEach(function (a) { pm.expect(a.endDate >= today).to.eql(true); });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{basicToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/activities?upcoming=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"activities"
+							],
+							"query": [
+								{
+									"key": "upcoming",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] GET - Filter by date range",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"[s1] Only events in the range\", function () {",
+									"    var d = pm.response.json();",
+									"    pm.expect(d.length).to.be.above(0);",
+									"    d.forEach(function (a) { pm.expect(a.startDate <= \"2035-01-31\" && a.endDate >= \"2035-01-01\").to.eql(true); });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{basicToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/activities?from=2035-01-01&to=2035-01-31",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"activities"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "2035-01-01"
+								},
+								{
+									"key": "to",
+									"value": "2035-01-31"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] GET - Event shows date, place and description",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"[s1] Has date, place and description\", function () {",
+									"    pm.expect(pm.response.json()).to.include.keys(\"startDate\",\"endDate\",\"spaceName\",\"spaceLocation\",\"description\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{basicToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/activities/{{activityId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"activities",
+								"{{activityId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] POST - Event without mandatory data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"pm.test(\"[s1] Message says what is missing\", function () {",
+									"    pm.expect(pm.response.json().message).to.include(\"nombre\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/activities",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"activities"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"description\": \"Sin nombre\",\n  \"startDate\": \"2035-01-10\",\n  \"endDate\": \"2035-01-11\",\n  \"spaceId\": {{spaceId}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] POST - Event as trainee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 403\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{basicToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/activities",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"activities"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"No permitido\",\n  \"description\": \"Evento creado por la coleccion\",\n  \"startDate\": \"2035-01-10\",\n  \"endDate\": \"2035-01-11\",\n  \"spaceId\": {{spaceId}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "enrollments",
+			"item": [
+				{
+					"name": "[s1] POST - Enroll in activity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"var d = pm.response.json();",
+									"pm.environment.set(\"traineeId\", d.userId);",
+									"pm.test(\"[s1] Enrollment belongs to the logged user\", function () {",
+									"    pm.expect(d.activityId).to.eql(Number(pm.environment.get(\"activityId\")));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{basicToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/enrollments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"enrollments"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"activityId\": {{activityId}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] POST - Duplicated enrollment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 409\", function () {",
+									"    pm.response.to.have.status(409);",
+									"});",
+									"pm.test(\"[s1] Explains it is already enrolled\", function () {",
+									"    pm.expect(pm.response.json().message).to.include(\"Ya estás inscrito\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{basicToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/enrollments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"enrollments"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"activityId\": {{activityId}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] GET - My activities includes it",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"[s1] Appears once in my activities\", function () {",
+									"    var id = Number(pm.environment.get(\"activityId\"));",
+									"    var mine = pm.response.json().filter(function (e) { return e.activityId === id; });",
+									"    pm.expect(mine.length).to.eql(1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{basicToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/enrollments/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"enrollments",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] DELETE - Cancel enrollment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{basicToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/enrollments/{{traineeId}}/{{activityId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"enrollments",
+								"{{traineeId}}",
+								"{{activityId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] GET - My activities no longer includes it",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"[s1] It left my activities\", function () {",
+									"    var id = Number(pm.environment.get(\"activityId\"));",
+									"    pm.expect(pm.response.json().filter(function (e) { return e.activityId === id; }).length).to.eql(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{basicToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/enrollments/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"enrollments",
+								"me"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "routines",
+			"item": [
+				{
+					"name": "[s1] POST - Create Routine",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"[s1] Response has idRoutine\", function () {",
+									"    var d = pm.response.json();",
+									"    pm.expect(d.idRoutine).to.not.be.null;",
+									"    pm.expect(d.idRoutine).to.not.be.undefined;",
+									"});",
+									"var d = pm.response.json();",
+									"if (d.idRoutine) { pm.environment.set(\"routineId\", d.idRoutine); }"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Morning Routine\",\n  \"description\": \"Full body morning workout\",\n  \"difficulty\": \"INTERMEDIATE\",\n  \"userId\": {{userId}},\n  \"isPredesigned\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/routines",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"routines"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] PUT - Update Routine",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"[s1] Response has idRoutine\", function () {",
+									"    var d = pm.response.json();",
+									"    pm.expect(d.idRoutine).to.not.be.null;",
+									"    pm.expect(d.idRoutine).to.not.be.undefined;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Morning Routine Updated\",\n  \"description\": \"Updated full body workout\",\n  \"difficulty\": \"ADVANCED\",\n  \"userId\": {{userId}},\n  \"isPredesigned\" : false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/routines/{{routineId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"routines",
+								"{{routineId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] POST - Publish predesigned routine as trainee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 403\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{basicToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/routines",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"routines"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"No permitida\",\n  \"description\": \"x\",\n  \"creationDate\": \"2026-11-03\",\n  \"isPredesigned\": true,\n  \"level\": \"Principiante\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "progress",
+			"item": [
+				{
+					"name": "[s1] POST - Create Progress",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"[s1] Response has idProgress\", function () {",
+									"    var d = pm.response.json();",
+									"    pm.expect(d.idProgress).to.not.be.null;",
+									"    pm.expect(d.idProgress).to.not.be.undefined;",
+									"});",
+									"var d = pm.response.json();",
+									"if (d.idProgress) { pm.environment.set(\"progressId\", d.idProgress); }"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": {{userId}},\n  \"routineId\":{{routineId}},\n  \"exerciseId\": {{exerciseId}},\n  \"reps\": 12,\n  \"durationMin\": 30,\n  \"effortLevel\": 3,\n  \"setNumber\": 1,\n  \"weightKg\": 50\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/progress",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"progress"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] PUT - Update Progress",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"[s1] Response has idProgress\", function () {",
+									"    var d = pm.response.json();",
+									"    pm.expect(d.idProgress).to.not.be.null;",
+									"    pm.expect(d.idProgress).to.not.be.undefined;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": {{userId}},\n  \"routineId\":{{routineId}},\n  \"exerciseId\": {{exerciseId}},\n  \"reps\": 24,\n  \"durationMin\": 60,\n  \"effortLevel\": 4,\n  \"setNumber\": 2,\n  \"weightKg\": 60\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/progress/{{progressId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"progress",
+								"{{progressId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] GET - Get All Progress only returns my own",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"var mine = pm.response.json();",
+									"pm.test(\"[s1] Every record belongs to the logged user\", function () {",
+									"    var ids = new Set(mine.map(function (x) { return x.userId; }));",
+									"    pm.expect(ids.size).to.be.below(2);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{basicToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/progress",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"progress"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] POST - Progress with invalid data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/progress",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"progress"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": {{userId}},\n  \"routineId\": {{routineId}},\n  \"exerciseId\": {{exerciseId}},\n  \"reps\": -1,\n  \"durationMin\": 30,\n  \"effortLevel\": 3,\n  \"setNumber\": 1,\n  \"weightKg\": 50\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "cleanup",
+			"item": [
+				{
+					"name": "[s1] DELETE - Delete Progress",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 204\", function () {\n    pm.response.to.have.status(204);\n});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/progress/{{progressId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"progress",
+								"{{progressId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] DELETE - Delete Routine",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 204\", function () {\n    pm.response.to.have.status(204);\n});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/routines/{{routineId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"routines",
+								"{{routineId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] DELETE - Delete Activity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 204\", function () {\n    pm.response.to.have.status(204);\n});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/activities/{{activityId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"activities",
+								"{{activityId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] DELETE - Delete Exercise",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 204\", function () {\n    pm.response.to.have.status(204);\n});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/exercises/{{exerciseId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exercises",
+								"{{exerciseId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] DELETE - Delete Space",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status code is 204\", function () {\n    pm.response.to.have.status(204);\n});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spaces/{{spaceId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spaces",
+								"{{spaceId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[s1] DELETE - Delete test user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"[s1] Status 204 on delete\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});\r",
+									"pm.environment.unset(\"testUserId\");"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/{{testUserId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{testUserId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
