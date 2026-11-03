@@ -26,8 +26,9 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
-import { getAllProgress, createProgress, deleteProgress } from '../../services/ProgressService';
+import { getAllProgress, createProgress, updateProgress, deleteProgress } from '../../services/ProgressService';
 import { getAllExercises } from '../../services/ExerciseService';
 import type { ProgressResponse, ProgressRequest, ExerciseResponse } from '../../types/api.types';
 import useAuth from '../../hooks/useAuth';
@@ -41,6 +42,8 @@ const ProgressScreen: React.FC = () => {
 
   // Dialog state
   const [open, setOpen] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<ProgressRequest>({
     userId: user?.idUser || 0,
     exerciseId: 0,
@@ -101,18 +104,65 @@ const ProgressScreen: React.FC = () => {
       effortLevel: 5,
       setNumber: 1
     });
+    setFormErrors({});
+    setEditingId(null);
+    setOpen(true);
+  };
+
+  const handleEdit = (entry: ProgressResponse) => {
+    setFormData({
+      userId: entry.userId,
+      exerciseId: entry.exerciseId,
+      routineId: entry.routineId,
+      dateLogged: entry.dateLogged,
+      reps: entry.reps,
+      weightKg: entry.weightKg,
+      durationMin: entry.durationMin,
+      effortLevel: entry.effortLevel,
+      setNumber: entry.setNumber
+    });
+    setFormErrors({});
+    setEditingId(entry.idProgress);
     setOpen(true);
   };
 
   const handleClose = () => setOpen(false);
 
+  const validateForm = (data: ProgressRequest): Record<string, string> => {
+    const errors: Record<string, string> = {};
+
+    if (!data.exerciseId) {
+      errors.exerciseId = 'Debe seleccionar un ejercicio';
+    }
+    if (typeof data.reps === 'number' && data.reps < 0) {
+      errors.reps = 'Las repeticiones no pueden ser negativas';
+    }
+    if (typeof data.weightKg === 'number' && data.weightKg < 0) {
+      errors.weightKg = 'El peso no puede ser negativo';
+    }
+    if (typeof data.durationMin === 'number' && data.durationMin < 0) {
+      errors.durationMin = 'La duracion no puede ser negativa';
+    }
+    if (typeof data.effortLevel !== 'number') {
+      errors.effortLevel = 'El nivel de esfuerzo es obligatorio';
+    } else if (data.effortLevel < 1 || data.effortLevel > 10) {
+      errors.effortLevel = 'El nivel de esfuerzo debe estar entre 1 y 10';
+    }
+
+    return errors;
+  };
+
   const handleSubmit = async () => {
-    if (!formData.exerciseId) {
-      alert('Debe seleccionar un ejercicio');
+    const errors = validateForm(formData);
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) {
       return;
     }
 
-    const result = await createProgress(formData);
+    const result = editingId === null
+      ? await createProgress(formData)
+      : await updateProgress(editingId, formData);
+
     if (result.error) {
       alert(result.message);
     } else {
@@ -255,9 +305,14 @@ const ProgressScreen: React.FC = () => {
                         <ListItem 
                             sx={{ px: 3, py: 2 }}
                             secondaryAction={
-                                <IconButton edge="end" color="error" onClick={() => handleDelete(entry.idProgress)}>
-                                    <DeleteIcon />
-                                </IconButton>
+                                <>
+                                    <IconButton color="primary" onClick={() => handleEdit(entry)}>
+                                        <EditIcon />
+                                    </IconButton>
+                                    <IconButton edge="end" color="error" onClick={() => handleDelete(entry.idProgress)}>
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </>
                             }
                         >
                             <ListItemText 
@@ -313,13 +368,25 @@ const ProgressScreen: React.FC = () => {
         maxWidth="xs"
         sx={{ '& .MuiDialog-paper': { borderRadius: 3 } }}
       >
-        <DialogTitle sx={{ fontWeight: 'bold' }}>Registrar Progreso</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>
+          {editingId === null ? 'Registrar Progreso' : 'Editar Registro'}
+        </DialogTitle>
         <DialogContent dividers>
           <Stack spacing={3} sx={{ mt: 1 }}>
             <Autocomplete
                 options={exercises}
+                value={exerciseMap.get(formData.exerciseId) ?? null}
+                isOptionEqualToValue={(option, selected) => option.idExercise === selected.idExercise}
                 getOptionLabel={(option) => `${option.name} (${option.type})`}
-                renderInput={(params) => <TextField {...params} label="Seleccionar Ejercicio" fullWidth />}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Seleccionar Ejercicio"
+                    fullWidth
+                    error={Boolean(formErrors.exerciseId)}
+                    helperText={formErrors.exerciseId}
+                  />
+                )}
                 onChange={(_, newValue) => setFormData({ ...formData, exerciseId: newValue?.idExercise || 0 })}
             />
             
@@ -329,6 +396,8 @@ const ProgressScreen: React.FC = () => {
                     type="number"
                     fullWidth
                     value={formData.reps || ''}
+                    error={Boolean(formErrors.reps)}
+                    helperText={formErrors.reps}
                     onChange={(e) => setFormData({ ...formData, reps: Number(e.target.value) })}
                 />
                 <TextField
@@ -336,6 +405,8 @@ const ProgressScreen: React.FC = () => {
                     type="number"
                     fullWidth
                     value={formData.weightKg || ''}
+                    error={Boolean(formErrors.weightKg)}
+                    helperText={formErrors.weightKg}
                     onChange={(e) => setFormData({ ...formData, weightKg: Number(e.target.value) })}
                 />
             </Stack>
@@ -345,6 +416,8 @@ const ProgressScreen: React.FC = () => {
                 type="number"
                 fullWidth
                 value={formData.durationMin || ''}
+                error={Boolean(formErrors.durationMin)}
+                helperText={formErrors.durationMin}
                 onChange={(e) => setFormData({ ...formData, durationMin: Number(e.target.value) })}
             />
             
@@ -354,6 +427,8 @@ const ProgressScreen: React.FC = () => {
                 fullWidth
                 slotProps={{ htmlInput: { min: 1, max: 10 } }}
                 value={formData.effortLevel}
+                error={Boolean(formErrors.effortLevel)}
+                helperText={formErrors.effortLevel}
                 onChange={(e) => setFormData({ ...formData, effortLevel: Number(e.target.value) })}
             />
           </Stack>
@@ -361,7 +436,7 @@ const ProgressScreen: React.FC = () => {
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={handleClose} sx={{ fontWeight: 600 }}>Cancelar</Button>
           <Button onClick={handleSubmit} variant="contained" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 3 }}>
-            Guardar Registro
+            {editingId === null ? 'Guardar Registro' : 'Guardar Cambios'}
           </Button>
         </DialogActions>
       </Dialog>
