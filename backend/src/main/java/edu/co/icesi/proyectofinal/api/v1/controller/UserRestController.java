@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,11 @@ public class UserRestController {
     )
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('LIST_USER', 'VIEW_OWN_PROFILE')")
-    public ResponseEntity<UserResponse> getById(@PathVariable Integer id) {
+    public ResponseEntity<UserResponse> getById(@PathVariable Integer id, Principal principal) {
+        if (!canAccess(id, principal)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         User user = userService.getUserById(id);
         return ResponseEntity.ok(userMapper.toResponse(user));
     }
@@ -92,10 +97,22 @@ public class UserRestController {
     )
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('EDIT_USER', 'EDIT_OWN_PROFILE')")
-    public ResponseEntity<UserResponse> update(@PathVariable Integer id, @RequestBody UserRequest userRequest) {
+    public ResponseEntity<UserResponse> update(@PathVariable Integer id, @RequestBody UserRequest userRequest,
+                                               Principal principal) {
+        if (!canAccess(id, principal)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         User user = userMapper.toEntity(userRequest);
         User updatedUser = userService.updateUser(id, user);
         return ResponseEntity.ok(userMapper.toResponse(updatedUser));
+    }
+
+    private boolean canAccess(Integer id, Principal principal) {
+        User currentUser = userService.getUserByEmail(principal.getName());
+        boolean isAdmin = currentUser.getUserRoles().stream()
+                .anyMatch(ur -> ur.getRole().getName().equals("ADMIN"));
+        return isAdmin || currentUser.getIdUser().equals(id);
     }
 
     @Operation(
