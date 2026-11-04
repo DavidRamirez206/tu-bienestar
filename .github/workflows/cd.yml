@@ -61,11 +61,36 @@ jobs:
           rm env.json
       - name: Desplegar el commit probado y esperar "live"
         run: |
-          ID=$(curl --fail-with-body -sS -X POST "$API/services/$SERVICE_ID/deploys" -H "Authorization: Bearer $RENDER_API_KEY" \
-            -H "Content-Type: application/json" -d "{\"commitId\":\"$COMMIT\"}" | jq -r '.id')
+          CODE=$(curl -sS -o resp.json -w "%{http_code}" -X POST "$API/services/$SERVICE_ID/deploys" \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json" -d "{\"commitId\":\"$COMMIT\"}")
+          echo "POST /deploys -> HTTP $CODE"
+          echo "Respuesta de Render:"; cat resp.json; echo
+          case "$CODE" in
+            2*) ;;
+            *) echo "::error::Render rechazó la creación del deploy (HTTP $CODE)"; exit 1 ;;
+          esac
+
+          ID=$(jq -r 'if type=="object" then (.id // empty) else empty end' resp.json 2>/dev/null || true)
+
+          # Si Render no devolvió id (p. ej. deploy en cola), lo buscamos por commit en la lista.
+          if [ -z "$ID" ]; then
+            echo "Render no devolvió id; buscando el deploy del commit $COMMIT en la lista..."
+            for i in $(seq 1 30); do
+              ID=$(curl -sS "$API/services/$SERVICE_ID/deploys?limit=20" -H "Authorization: Bearer $RENDER_API_KEY" \
+                | jq -r --arg c "$COMMIT" '[ (if type=="array" then .[] else empty end) | .deploy | select(.commit.id == $c) ] | first | .id // empty' 2>/dev/null || true)
+              [ -n "$ID" ] && break
+              echo "[$i] aún no aparece el deploy"
+              sleep 10
+            done
+          fi
+          rm -f resp.json
+          [ -n "$ID" ] || { echo "::error::No se encontró ningún deploy para el commit $COMMIT"; exit 1; }
+
           echo "Despliegue $ID del commit $COMMIT"
           for i in $(seq 1 60); do
-            ST=$(curl -sS "$API/services/$SERVICE_ID/deploys/$ID" -H "Authorization: Bearer $RENDER_API_KEY" | jq -r '.status')
+            RESP=$(curl -sS "$API/services/$SERVICE_ID/deploys/$ID" -H "Authorization: Bearer $RENDER_API_KEY" || true)
+            ST=$(echo "$RESP" | jq -r 'if type=="object" then (.status // "desconocido") else "desconocido" end' 2>/dev/null || echo "desconocido")
             echo "[$i] $ST"
             case "$ST" in
               live) exit 0 ;;
@@ -97,11 +122,36 @@ jobs:
             -H "Content-Type: application/json" -d '[{"key":"HUSKY","value":"0"}]' > /dev/null
       - name: Desplegar el commit probado y esperar "live"
         run: |
-          ID=$(curl --fail-with-body -sS -X POST "$API/services/$SERVICE_ID/deploys" -H "Authorization: Bearer $RENDER_API_KEY" \
-            -H "Content-Type: application/json" -d "{\"commitId\":\"$COMMIT\"}" | jq -r '.id')
+          CODE=$(curl -sS -o resp.json -w "%{http_code}" -X POST "$API/services/$SERVICE_ID/deploys" \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json" -d "{\"commitId\":\"$COMMIT\"}")
+          echo "POST /deploys -> HTTP $CODE"
+          echo "Respuesta de Render:"; cat resp.json; echo
+          case "$CODE" in
+            2*) ;;
+            *) echo "::error::Render rechazó la creación del deploy (HTTP $CODE)"; exit 1 ;;
+          esac
+
+          ID=$(jq -r 'if type=="object" then (.id // empty) else empty end' resp.json 2>/dev/null || true)
+
+          # Si Render no devolvió id (p. ej. deploy en cola), lo buscamos por commit en la lista.
+          if [ -z "$ID" ]; then
+            echo "Render no devolvió id; buscando el deploy del commit $COMMIT en la lista..."
+            for i in $(seq 1 30); do
+              ID=$(curl -sS "$API/services/$SERVICE_ID/deploys?limit=20" -H "Authorization: Bearer $RENDER_API_KEY" \
+                | jq -r --arg c "$COMMIT" '[ (if type=="array" then .[] else empty end) | .deploy | select(.commit.id == $c) ] | first | .id // empty' 2>/dev/null || true)
+              [ -n "$ID" ] && break
+              echo "[$i] aún no aparece el deploy"
+              sleep 10
+            done
+          fi
+          rm -f resp.json
+          [ -n "$ID" ] || { echo "::error::No se encontró ningún deploy para el commit $COMMIT"; exit 1; }
+
           echo "Despliegue $ID del commit $COMMIT"
           for i in $(seq 1 45); do
-            ST=$(curl -sS "$API/services/$SERVICE_ID/deploys/$ID" -H "Authorization: Bearer $RENDER_API_KEY" | jq -r '.status')
+            RESP=$(curl -sS "$API/services/$SERVICE_ID/deploys/$ID" -H "Authorization: Bearer $RENDER_API_KEY" || true)
+            ST=$(echo "$RESP" | jq -r 'if type=="object" then (.status // "desconocido") else "desconocido" end' 2>/dev/null || echo "desconocido")
             echo "[$i] $ST"
             case "$ST" in
               live) exit 0 ;;
