@@ -1,0 +1,129 @@
+name: CD Render
+
+# Corre cuando "CI" termina bien en un push a main (no en PR ni en dev).
+# Los secretos viven en el environment "production" de GitHub y se copian a Render
+# en cada despliegue: no se escribe nada a mano en Render ni en el repo.
+on:
+  workflow_run:
+    workflows: [ "CI" ]
+    types: [ completed ]
+    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  API: https://api.render.com/v1
+  COMMIT: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+jobs:
+  backend:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.FRONT_URL }}
+    env:
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      SERVICE_ID: ${{ vars.RENDER_BACKEND_SERVICE_ID }}
+    steps:
+      - name: Sincronizar variables (PUT reemplaza todas)
+        env:
+          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+          APP_SECURITY_SECRETKEY: ${{ secrets.APP_SECURITY_SECRETKEY }}
+          APP_CORS_ALLOWED_ORIGINS: ${{ vars.FRONT_URL }}
+        run: |
+          for v in RENDER_API_KEY SERVICE_ID SPRING_DATASOURCE_URL SPRING_DATASOURCE_USERNAME SPRING_DATASOURCE_PASSWORD APP_SECURITY_SECRETKEY APP_CORS_ALLOWED_ORIGINS; do
+            [ -n "${!v}" ] || { echo "::error::Falta $v en el environment production"; exit 1; }
+          done
+          jq -n '[
+            {key:"SPRING_DATASOURCE_URL",          value:env.SPRING_DATASOURCE_URL},
+            {key:"SPRING_DATASOURCE_USERNAME",     value:env.SPRING_DATASOURCE_USERNAME},
+            {key:"SPRING_DATASOURCE_PASSWORD",     value:env.SPRING_DATASOURCE_PASSWORD},
+            {key:"SPRING_JPA_HIBERNATE_DDL_AUTO",  value:"validate"},
+            {key:"APP_SECURITY_SECRETKEY",         value:env.APP_SECURITY_SECRETKEY},
+            {key:"APP_SECURITY_EXPIRATIONMINUTES", value:"60"},
+            {key:"APP_SECURITY_COOKIE_SECURE",     value:"true"},
+            {key:"APP_CORS_ALLOWED_ORIGINS",       value:env.APP_CORS_ALLOWED_ORIGINS},
+            {key:"PORT",                           value:"8080"},
+            {key:"JAVA_TOOL_OPTIONS",              value:"-XX:MaxRAMPercentage=70 -XX:+UseSerialGC -Xss512k"}
+          ]' > env.json
+          curl --fail-with-body -sS -X PATCH "$API/services/$SERVICE_ID" -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json" -d '{"autoDeploy":"no"}' > /dev/null
+          curl --fail-with-body -sS -X PUT "$API/services/$SERVICE_ID/env-vars" -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json" --data @env.json > /dev/null
+          rm env.json
+      - name: Desplegar el commit probado y esperar "live"
+        run: |
+          ID=$(curl --fail-with-body -sS -X POST "$API/services/$SERVICE_ID/deploys" -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json" -d "{\"commitId\":\"$COMMIT\"}" | jq -r '.id')
+          echo "Despliegue $ID del commit $COMMIT"
+          for i in $(seq 1 60); do
+            ST=$(curl -sS "$API/services/$SERVICE_ID/deploys/$ID" -H "Authorization: Bearer $RENDER_API_KEY" | jq -r '.status')
+            echo "[$i] $ST"
+            case "$ST" in
+              live) exit 0 ;;
+              build_failed|update_failed|canceled|deactivated|pre_deploy_failed)
+                echo "::error::Despliegue en '$ST'. Revisa los logs en Render."; exit 1 ;;
+            esac
+            sleep 20
+          done
+          echo "::error::Tiempo de espera agotado"; exit 1
+
+  frontend:
+    needs: backend
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.FRONT_URL }}
+    env:
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      SERVICE_ID: ${{ vars.RENDER_FRONTEND_SERVICE_ID }}
+    steps:
+      - name: Sincronizar variables
+        run: |
+          [ -n "$SERVICE_ID" ] || { echo "::error::Falta RENDER_FRONTEND_SERVICE_ID"; exit 1; }
+          # VITE_API_HOST va vacío a propósito: el front llama a /api en su mismo dominio
+          # y Render lo reenvía al back (regla de rewrite). Así la cookie de sesión es de primera parte.
+          curl --fail-with-body -sS -X PATCH "$API/services/$SERVICE_ID" -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json" -d '{"autoDeploy":"no"}' > /dev/null
+          curl --fail-with-body -sS -X PUT "$API/services/$SERVICE_ID/env-vars" -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json" -d '[{"key":"HUSKY","value":"0"}]' > /dev/null
+      - name: Desplegar el commit probado y esperar "live"
+        run: |
+          ID=$(curl --fail-with-body -sS -X POST "$API/services/$SERVICE_ID/deploys" -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json" -d "{\"commitId\":\"$COMMIT\"}" | jq -r '.id')
+          echo "Despliegue $ID del commit $COMMIT"
+          for i in $(seq 1 45); do
+            ST=$(curl -sS "$API/services/$SERVICE_ID/deploys/$ID" -H "Authorization: Bearer $RENDER_API_KEY" | jq -r '.status')
+            echo "[$i] $ST"
+            case "$ST" in
+              live) exit 0 ;;
+              build_failed|update_failed|canceled|deactivated|pre_deploy_failed)
+                echo "::error::Despliegue en '$ST'. Revisa los logs en Render."; exit 1 ;;
+            esac
+            sleep 20
+          done
+          echo "::error::Tiempo de espera agotado"; exit 1
+
+  humo:
+    needs: frontend
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: HTTPS, HSTS y API detrás del mismo dominio
+        env:
+          FRONT_URL: ${{ vars.FRONT_URL }}
+        run: |
+          [ -n "$FRONT_URL" ] || { echo "::warning::FRONT_URL no está definido; se omite"; exit 0; }
+          curl -sSI --fail --retry 5 --retry-delay 10 "$FRONT_URL" | tee h.txt
+          grep -qi '^strict-transport-security' h.txt || echo "::warning::Falta HSTS (Render → Headers)"
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" --retry 6 --retry-delay 15 --retry-all-errors "$FRONT_URL/api/v1/exercises")
+          echo "GET /api/v1/exercises sin sesión → $CODE"
+          [ "$CODE" = "401" ] || { echo "::error::Se esperaba 401 (¿falta la regla /api/* en Render?)"; exit 1; }
