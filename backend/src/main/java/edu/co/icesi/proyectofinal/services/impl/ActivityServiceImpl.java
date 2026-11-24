@@ -8,6 +8,9 @@ import edu.co.icesi.proyectofinal.repository.EnrollmentRepository;
 import edu.co.icesi.proyectofinal.repository.ScheduleRepository;
 import edu.co.icesi.proyectofinal.repository.SpaceRepository;
 import edu.co.icesi.proyectofinal.services.ActivityService;
+import edu.co.icesi.proyectofinal.services.NotificationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,17 +21,22 @@ import java.util.List;
 @Service
 public class ActivityServiceImpl implements ActivityService {
 
+    private static final Logger log = LoggerFactory.getLogger(ActivityServiceImpl.class);
+
     private final ActivityRepository activityRepository;
     private final SpaceRepository spaceRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final ScheduleRepository scheduleRepository;
+    private final NotificationService notificationService;
 
     public ActivityServiceImpl(ActivityRepository activityRepository, SpaceRepository spaceRepository,
-                               EnrollmentRepository enrollmentRepository, ScheduleRepository scheduleRepository) {
+                               EnrollmentRepository enrollmentRepository, ScheduleRepository scheduleRepository,
+                               NotificationService notificationService) {
         this.activityRepository = activityRepository;
         this.spaceRepository = spaceRepository;
         this.enrollmentRepository = enrollmentRepository;
         this.scheduleRepository = scheduleRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -59,7 +67,19 @@ public class ActivityServiceImpl implements ActivityService {
     public Activity save(Activity activity) {
         activity.setSpace(resolveSpace(activity));
         validateDates(activity);
-        return activityRepository.save(activity);
+        Activity saved = activityRepository.save(activity);
+        notifyNewActivity(saved);
+        return saved;
+    }
+
+    // HU15: avisa a todos los usuarios. Si el aviso falla, el evento igual queda creado.
+    private void notifyNewActivity(Activity activity) {
+        try {
+            notificationService.notifyAllUsers(NotificationService.TYPE_NEW_ACTIVITY,
+                    "Nuevo evento: " + activity.getName(), activity.getIdActivity(), NotificationService.REF_ACTIVITY);
+        } catch (RuntimeException ex) {
+            log.warn("No se pudo notificar el evento {}: {}", activity.getIdActivity(), ex.getMessage());
+        }
     }
 
     @Override
