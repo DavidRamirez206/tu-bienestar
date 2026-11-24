@@ -125,7 +125,8 @@ const ProfileScreen = () => {
             }}
           >
             <Stack direction="row" spacing={3} sx={{ alignItems: 'center', mb: 3 }}>
-              <Avatar 
+              <Avatar
+                aria-hidden="true"
                 sx={{ 
                   width: 80, 
                   height: 80, 
@@ -161,7 +162,7 @@ const ProfileScreen = () => {
           <Grid container spacing={4}>
             <Grid size={{ xs: 12, md: 4 }}>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.disabled', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '1px' }}>
                   Nombre completo
                 </Typography>
                 <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5 }}>
@@ -172,7 +173,7 @@ const ProfileScreen = () => {
 
             <Grid size={{ xs: 12, md: 4 }}>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.disabled', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '1px' }}>
                   Correo electrónico
                 </Typography>
                 <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5 }}>
@@ -183,7 +184,7 @@ const ProfileScreen = () => {
 
             <Grid size={{ xs: 12, md: 4 }}>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.disabled', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '1px' }}>
                   Edad
                 </Typography>
                 <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5 }}>
