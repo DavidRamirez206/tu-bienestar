@@ -24,3 +24,9 @@ export const deleteActivity = async (id: number) => {
         axiosClient.delete(`/api/v1/activities/${id}`)
     );
 };
+
+export const getActivityById = async (id: number) => {
+    return safeRequest<ActivityResponse>(
+        axiosClient.get(`/api/v1/activities/${id}`)
+    );
+};
