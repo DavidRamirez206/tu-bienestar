@@ -31,8 +31,11 @@ const SimpleBarChart: React.FC<Props> = ({ data, title, subtitle, height = 180, 
           </Typography>
       )}
       
-      <Box sx={{ 
-          display: 'flex', 
+      <Box
+        role="list"
+        aria-label={title}
+        sx={{
+          display: 'flex',
           justifyContent: 'space-between', 
           alignItems: 'flex-end', 
           height, 
@@ -46,7 +49,13 @@ const SimpleBarChart: React.FC<Props> = ({ data, title, subtitle, height = 180, 
           const barHeight = maxValue > 0 ? (d.value / maxValue) * (height - 30) : 0;
           return (
             <Tooltip key={i} title={`${d.value} ${unit}`} arrow placement="top">
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: barWidth, flexGrow: 1 }}>
+                {/* Cada barra se alcanza con Tab y el lector de pantalla lee su valor. */}
+                <Box
+                  role="listitem"
+                  tabIndex={0}
+                  aria-label={`${d.label}: ${d.value} ${unit}`.trim()}
+                  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: barWidth, flexGrow: 1, borderRadius: 1 }}
+                >
                 <Box 
                     sx={{ 
                     width: '100%', 
@@ -67,7 +76,7 @@ const SimpleBarChart: React.FC<Props> = ({ data, title, subtitle, height = 180, 
                     }
                     }} 
                 />
-                <Typography variant="caption" sx={{ mt: 1, whiteSpace: 'nowrap', fontWeight: 700, fontSize: '0.65rem', color: 'text.secondary' }}>
+                <Typography variant="caption" aria-hidden="true" sx={{ mt: 1, whiteSpace: 'nowrap', fontWeight: 700, fontSize: '0.65rem', color: 'text.secondary' }}>
                     {d.label}
                 </Typography>
                 </Box>

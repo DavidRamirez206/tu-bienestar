@@ -142,7 +142,7 @@ const HomeScreen = () => {
                     </Typography>
                   </Box>
                   <Box sx={{ textAlign: 'right' }}>
-                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.disabled', textTransform: 'uppercase' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase' }}>
                       Creada el
                     </Typography>
                     <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>

@@ -153,7 +153,7 @@ const MainLayout = () => {
 
       <Divider />
 
-      <List sx={{ px: 1.5, py: 2, flexGrow: 1 }}>
+      <List component="nav" id="menu-principal" aria-label="Menú principal" sx={{ px: 1.5, py: 2, flexGrow: 1 }}>
         {navItems
           .filter((item) => hasAuthority(item.requiredAuthorities))
           .map((item) => {
@@ -166,6 +166,8 @@ const MainLayout = () => {
                     setMobileOpen(false);
                   }}
                   selected={selected}
+                  aria-current={selected ? "page" : undefined}
+                  title={isCollapsed && !isMobile ? item.label : undefined}
                   sx={{
                       borderRadius: 2,
                       mb: 0.5,
@@ -262,6 +264,27 @@ const MainLayout = () => {
       sx={{ display: "flex", minHeight: "100vh", backgroundColor: "#f5f7fb" }}
     >
       <CssBaseline />
+      {/* HU13.2: enlace para saltar el menu, visible solo cuando recibe el foco. */}
+      <Box
+        component="a"
+        href="#contenido"
+        sx={{
+          position: "absolute",
+          left: 16,
+          top: -100,
+          zIndex: 2000,
+          px: 2,
+          py: 1,
+          borderRadius: 2,
+          bgcolor: "primary.main",
+          color: "primary.contrastText",
+          fontWeight: 700,
+          textDecoration: "none",
+          "&:focus": { top: 16 },
+        }}
+      >
+        Saltar al contenido
+      </Box>
       <Drawer
         variant={isMobile ? "temporary" : "permanent"}
         open={isMobile ? mobileOpen : true}
@@ -320,7 +343,9 @@ const MainLayout = () => {
             <Stack direction="row" sx={{ alignItems: 'center', minWidth: 0 }} spacing={1}>
               <IconButton
                 color="inherit"
-                aria-label="open drawer"
+                aria-label={isMobile ? "Abrir menú" : isCollapsed ? "Expandir menú" : "Contraer menú"}
+                aria-controls="menu-principal"
+                aria-expanded={isMobile ? mobileOpen : !isCollapsed}
                 onClick={handleDrawerToggle}
                 edge="start"
                 sx={{ mr: { xs: 0, md: 2 } }}
@@ -351,7 +376,9 @@ const MainLayout = () => {
           </Stack>
         </Paper>
 
-        <Outlet />
+        <Box id="contenido" tabIndex={-1} sx={{ outline: "none" }}>
+          <Outlet />
+        </Box>
       </Box>
 
       {/* Global components */}

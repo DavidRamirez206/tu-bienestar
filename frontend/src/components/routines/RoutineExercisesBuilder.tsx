@@ -220,6 +220,8 @@ const RoutineExercisesBuilder = ({
                     <IconButton
                       color="error"
                       size="small"
+                      aria-label="Quitar ejercicio de la rutina"
+                      title="Quitar ejercicio de la rutina"
                       onClick={() => handleRemoveDraft(draft.exerciseId)}
                     >
                       <DeleteIcon fontSize="small" />
