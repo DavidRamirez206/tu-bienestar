@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout (~{::title}, ~{::section})}">
+<head>
+    <title>Inicio</title>
+</head>
+<body>
+
+<section class="container mt-4">
+
+    <h2>Dashboard</h2>
+
+    <!-- Stats -->
+    <div class="row mt-4">
+
+        <div class="col-md-4">
+            <div class="card p-3 text-center">
+                <h5>Rutinas</h5>
+                <h2>12</h2>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card p-3 text-center">
+                <h5>Progreso</h5>
+                <h2>75%</h2>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card p-3 text-center">
+                <h5>Eventos</h5>
+                <h2>3</h2>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Perfil rápido -->
+    <div class="card mt-5 p-4">
+        <h4>Mi Perfil</h4>
+
+        <p><strong>Nombre:</strong> <span th:text="${user.firstName}"></span></p>
+        <p><strong>Email:</strong> <span th:text="${user.institutionalEmail}"></span></p>
+
+        <a th:href="@{/users/edit-profile}" class="btn btn-primary">
+            Editar perfil
+        </a>
+    </div>
+
+</section>
+
+</body>
+</html>

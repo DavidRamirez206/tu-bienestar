@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout (~{::title}, ~{::section})}">
+<head>
+    <title>Editar Póliza</title>
+</head>
+<body>
+
+<section>
+    <div class="container mt-5">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h3 class="mb-0"><i class="fas fa-edit"></i> Editar Póliza</h3>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/policies/save}" th:object="${policy}" method="post">
+                    <input type="hidden" th:field="*{id}">
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nombre de la Póliza</label>
+                        <input type="text" id="name" th:field="*{name}"
+                               class="form-control" placeholder="Nombre de la Póliza" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Descripción</label>
+                        <textarea id="description" th:field="*{description}"
+                                  class="form-control" rows="2" placeholder="Descripción de la Póliza"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="resource" class="form-label">Recurso (URL o Módulo)</label>
+                        <input type="text" id="resource" th:field="*{resource}"
+                               class="form-control" placeholder="Ej: /users, /reports">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="action" class="form-label">Acción permitida</label>
+                        <input type="text" id="action" th:field="*{action}"
+                               class="form-control" placeholder="Ej: READ, WRITE, DELETE">
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                        <a th:href="@{/policies}" class="btn btn-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Login</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link th:href="@{/styles.css}" rel="stylesheet">
+</head>
+
+<body class="login-container">
+
+<div class="login-wrapper">
+    <div class="login-bg"></div>
+    <div class="login-form-section">
+
+        <img th:src="@{/images/logo.png}" class="logo-corner">
+
+        <div class="login-card">
+
+            <h3 class="text-center mb-4">Iniciar sesión</h3>
+
+            <form th:action="@{/login}" method="post">
+
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="text" name="username" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Contraseña</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+
+                <button class="btn btn-primary w-100">Ingresar</button>
+
+                <p class="text-center mt-3">
+                    <a th:href="@{/register}">Registrarse</a>
+                </p>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="toast-container position-fixed top-0 end-0 p-3">
+
+    <div th:if="${param.success}" class="toast text-bg-success">
+        <div class="toast-body">
+            Usuario autenticado correctamente
+        </div>
+    </div>
+
+    <div th:if="${param.error}" class="toast text-bg-danger">
+        <div class="toast-body">
+            Credenciales incorrectas
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/script.js}"></script>
+</body>
+</html>
