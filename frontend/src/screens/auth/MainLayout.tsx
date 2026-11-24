@@ -24,6 +24,8 @@ import DirectionsRunIcon from "@mui/icons-material/DirectionsRun";
 import EventIcon from "@mui/icons-material/Event";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import PersonIcon from "@mui/icons-material/Person";
+import GroupsIcon from "@mui/icons-material/Groups";
+import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import React from "react";
@@ -67,6 +69,18 @@ const navItems: NavItem[] = [
     label: "Progreso",
     path: "/progress",
     icon: <ShowChartIcon />,
+  },
+  {
+    label: "Mis alumnos",
+    path: "/my-students",
+    icon: <GroupsIcon />,
+    requiredAuthorities: ["TRAINER"],
+  },
+  {
+    label: "Asignar entrenadores",
+    path: "/assignments",
+    icon: <AssignmentIndIcon />,
+    requiredAuthorities: ["ADMIN"],
   },
   {
     label: "Mi perfil",

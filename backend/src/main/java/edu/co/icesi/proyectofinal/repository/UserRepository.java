@@ -21,4 +21,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findTopByOrderByIdUserDesc();
 
     Optional<User> getUserByIdUser(Integer userId);
+
+    List<User> findDistinctByUserRolesRoleName(String roleName);
 }
