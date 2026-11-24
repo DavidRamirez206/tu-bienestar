@@ -212,6 +212,7 @@ export interface AssignmentResponse {
   userId: number;
   userFirstName?: string;
   userLastName?: string;
+  userEmail?: string;
   trainerId: number;
   trainerFirstName?: string;
   trainerLastName?: string;
@@ -221,7 +222,6 @@ export interface AssignmentResponse {
 export type AssignmentRequest = {
   userId: number;
   trainerId: number;
-  assignmentDate: string;
 };
 
 export interface EnrollmentResponse {
