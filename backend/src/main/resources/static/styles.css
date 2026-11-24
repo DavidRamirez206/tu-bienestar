@@ -1,0 +1,169 @@
+/*General CSS override over bootstrap*/
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #f5f7fb;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 220px;
+    min-height: 100vh;
+}
+
+.sidebar .nav-link {
+    margin: 5px 0;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+.sidebar .nav-link:hover {
+    background-color: #6f42c1;
+}
+
+/* Content */
+.content {
+    background-color: #f5f7fb;
+}
+
+/* Cards*/
+.card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+
+/* Buttons */
+.btn-primary {
+    background-color: #6f42c1;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #5a34a3;
+}
+
+/* Tables */
+.table {
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Forms*/
+input, select {
+    border-radius: 8px !important;
+}
+
+
+/* Login/Register CSS*/
+body.login-container {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background: none !important;
+}
+
+/* main grid */
+.login-wrapper {
+    display: flex;
+    height: 100vh;
+}
+
+/* it can be a gradient, bland color or a image whatever */
+.login-bg {
+    flex: 1;
+    background: linear-gradient(
+            135deg,
+            #6f42c1,
+            #0d6efd,
+            #20c997
+    );
+}
+
+.login-form-section {
+    flex: 1;
+    background: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.login-card {
+    width: 380px;
+    padding: 35px;
+    border-radius: 15px;
+    background: white;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.logo-corner {
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    width: 200px;
+    height: auto;
+    object-fit: contain;
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+input {
+    border-radius: 8px !important;
+}
+
+.login-card {
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.register-bg {
+    flex: 1;
+    background: url('./images/fitness.jpg') no-repeat center center;
+    background-size: cover;
+    position: relative;
+}
+
+.logo-overlay {
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    width: 150px;
+    z-index: 2;   /* importante para que esté encima del overlay */
+}
+
+.countdown-circle {
+    width: 90px; height: 90px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto;
+    font-size: 2.2rem; font-weight: 700; color: #0d6efd;
+    position: relative;
+}
+.countdown-circle span { position: relative; z-index: 1; transition: color 0.4s; }
+.countdown-circle.ending span { color: #dc3545; }
+.countdown-circle svg.ring {
+    position: absolute; top: 0; left: 0;
+    width: 90px; height: 90px; transform: rotate(-90deg);
+}
+.countdown-circle svg.ring circle {
+    fill: none; stroke: #0d6efd; stroke-width: 5;
+    stroke-dasharray: 283; stroke-dashoffset: 0;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 0.4s;
+}
+.countdown-circle.ending svg.ring circle { stroke: #dc3545; }

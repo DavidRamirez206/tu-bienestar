@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout (~{::title}, ~{::section})}">
+
+<head>
+    <title>Usuarios</title>
+</head>
+
+<body>
+
+<section>
+
+    <h2><i class="fa fa-users"></i> Usuarios</h2>
+
+    <table class="table mt-3">
+        <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Acciones</th>
+        </tr>
+
+        <tr th:each="user : ${users}">
+            <td th:text="${user.firstName}"></td>
+            <td th:text="${user.institutionalEmail}"></td>
+            <td>
+
+                <!--NO tiene roles -->
+                <a th:if="${#lists.isEmpty(user.userRoles)}"
+                   class="btn btn-sm btn-success"
+                   th:href="@{/users/assign-role/{id}(id=${user.idUser})}">Asignar Rol
+                    <i class="fa fa-plus"></i>
+                </a>
+
+                <!--SI tiene roles -->
+                <a th:if="${!#lists.isEmpty(user.userRoles)}"
+                   class="btn btn-sm btn-warning"
+                   th:href="@{/users/assign-role/{id}(id=${user.idUser})}">Editar Rol
+                    <i class="fa fa-pen"></i>
+                </a>
+
+            </td>
+        </tr>
+
+    </table>
+
+</section>
+
+</body>
+</html>

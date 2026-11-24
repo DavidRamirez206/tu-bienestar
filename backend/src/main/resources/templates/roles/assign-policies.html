@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout/layout :: layout (~{::title}, ~{::section})">
+
+<head>
+    <title>Asignar Polizas</title>
+</head>
+
+<body>
+
+<section>
+<div class="container mt-5">
+    <h3>Asignar permisos</h3>
+
+    <form th:action="@{/roles/assign-policies}" method="post">
+        <input type="hidden" name="roleId" th:value="${role.id}">
+
+        <div class="form-check" th:each="pol : ${policy}">
+            <input class="form-check-input"
+                   type="checkbox"
+                   name="policies"
+                   th:value="${pol.id}"
+                   th:checked="${currentPolicyIds.contains(pol.id)}">
+            <label class="form-check-label" th:text="${pol.name}"></label>
+        </div>
+
+        <button class="btn btn-primary mt-3">Guardar</button>
+    </form>
+</div>
+</section>
+</body>
+</html>
