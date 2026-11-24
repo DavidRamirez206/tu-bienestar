@@ -16,6 +16,7 @@ create table activities (
         start_date date,
         description varchar(255),
         name varchar(255) not null,
+        type varchar(20),
         primary key (id_activity)
     );
 
