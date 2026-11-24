@@ -18,6 +18,8 @@ public class ActivityRequest {
     private String name;
     @NotBlank(message = "La descripción es obligatoria")
     private String description;
+    /** CLASE, TORNEO o GIMNASIO. Si no llega se toma CLASE. */
+    private String type;
     @NotNull(message = "La fecha de inicio es obligatoria")
     private LocalDate startDate;
     @NotNull(message = "La fecha de fin es obligatoria")

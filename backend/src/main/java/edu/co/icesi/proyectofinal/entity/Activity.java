@@ -23,6 +23,10 @@ public class Activity {
 
     private String description;
 
+    /** CLASE, TORNEO o GIMNASIO. */
+    @Column(length = 20)
+    private String type;
+
     private LocalDate startDate;
 
     private LocalDate endDate;

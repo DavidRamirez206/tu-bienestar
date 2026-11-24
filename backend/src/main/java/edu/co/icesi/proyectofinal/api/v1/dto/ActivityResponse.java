@@ -15,6 +15,7 @@ public class ActivityResponse {
     private Integer idActivity;
     private String name;
     private String description;
+    private String type;
     private LocalDate startDate;
     private LocalDate endDate;
     private Integer spaceId;

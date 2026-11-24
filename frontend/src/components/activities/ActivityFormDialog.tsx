@@ -9,7 +9,8 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
-import type { ActivityRequest, ActivityResponse, SpaceResponse } from "../../types/api.types";
+import type { ActivityRequest, ActivityResponse, ActivityType, SpaceResponse } from "../../types/api.types";
+import { ACTIVITY_TYPES } from "../../utils/activity.utils";
 
 type Props = {
   activity: ActivityResponse | null;
@@ -26,6 +27,7 @@ const ActivityFormDialog = ({ activity, spaces, onClose, onSave }: Props) => {
 
   const [name, setName] = useState(activity?.name ?? "");
   const [description, setDescription] = useState(activity?.description ?? "");
+  const [type, setType] = useState<ActivityType>(activity?.type ?? "CLASE");
   const [startDate, setStartDate] = useState(activity?.startDate ?? "");
   const [endDate, setEndDate] = useState(activity?.endDate ?? "");
   const [spaceId, setSpaceId] = useState(activity?.spaceId?.toString() ?? "");
@@ -49,6 +51,7 @@ const ActivityFormDialog = ({ activity, spaces, onClose, onSave }: Props) => {
     onSave({
       name: name.trim(),
       description: description.trim(),
+      type,
       startDate,
       endDate,
       spaceId: Number(spaceId),
@@ -62,6 +65,11 @@ const ActivityFormDialog = ({ activity, spaces, onClose, onSave }: Props) => {
         <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField label="Nombre" required fullWidth value={name} onChange={(e) => setName(e.target.value)} error={!!errors.name} helperText={errors.name} />
           <TextField label="Descripción" required fullWidth multiline minRows={3} value={description} onChange={(e) => setDescription(e.target.value)} error={!!errors.description} helperText={errors.description} />
+          <TextField label="Tipo" required select fullWidth value={type} onChange={(e) => setType(e.target.value as ActivityType)}>
+            {ACTIVITY_TYPES.map((option) => (
+              <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
+            ))}
+          </TextField>
           <TextField label="Fecha de inicio" required type="date" fullWidth slotProps={{ inputLabel: { shrink: true } }} value={startDate} onChange={(e) => setStartDate(e.target.value)} error={!!errors.startDate} helperText={errors.startDate} />
           <TextField label="Fecha de fin" required type="date" fullWidth slotProps={{ inputLabel: { shrink: true } }} value={endDate} onChange={(e) => setEndDate(e.target.value)} error={!!errors.endDate} helperText={errors.endDate} />
           <TextField label="Lugar" required select fullWidth value={spaceId} onChange={(e) => setSpaceId(e.target.value)} error={!!errors.spaceId} helperText={errors.spaceId}>

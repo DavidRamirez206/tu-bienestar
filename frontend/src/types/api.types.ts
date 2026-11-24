@@ -53,6 +53,7 @@ export interface ActivityResponse {
   idActivity: number;
   name: string;
   description?: string;
+  type?: ActivityType;
   startDate: string; // LocalDate
   endDate: string; // LocalDate
   spaceId?: number;
@@ -60,9 +61,12 @@ export interface ActivityResponse {
   spaceLocation?: string;
 }
 
+export type ActivityType = "CLASE" | "TORNEO" | "GIMNASIO";
+
 export type ActivityRequest = {
   name: string;
   description: string;
+  type: ActivityType;
   startDate: string;
   endDate: string;
   spaceId: number;
@@ -72,6 +76,7 @@ export type ActivityFilters = {
   upcoming?: boolean;
   from?: string;
   to?: string;
+  type?: ActivityType;
 };
 
 export interface ExerciseResponse {
@@ -193,13 +198,30 @@ export type RecommendationRequest = {
   dateCreated: string;
 };
 
+export type DayOfWeek =
+  | "MONDAY"
+  | "TUESDAY"
+  | "WEDNESDAY"
+  | "THURSDAY"
+  | "FRIDAY"
+  | "SATURDAY"
+  | "SUNDAY";
+
 export interface ScheduleResponse {
   idSchedule: number;
   activityId: number;
-  dayOfWeek: string;
+  activityName?: string;
+  activityType?: ActivityType;
+  spaceName?: string;
+  dayOfWeek: DayOfWeek;
   startTime: string; // LocalTime
   endTime: string; // LocalTime
 }
+
+export type ScheduleFilters = {
+  day?: DayOfWeek;
+  type?: ActivityType;
+};
 
 export type ScheduleRequest = {
   activityId: number;

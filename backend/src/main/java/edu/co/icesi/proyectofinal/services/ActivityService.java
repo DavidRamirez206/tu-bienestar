@@ -12,8 +12,9 @@ public interface ActivityService {
      * @param upcoming si es true omite los que ya terminaron
      * @param from     si llega, omite los que terminan antes de esta fecha
      * @param to       si llega, omite los que empiezan despues de esta fecha
+     * @param type     si llega, solo devuelve los de ese tipo (CLASE, TORNEO o GIMNASIO)
      */
-    List<Activity> search(boolean upcoming, LocalDate from, LocalDate to);
+    List<Activity> search(boolean upcoming, LocalDate from, LocalDate to, String type);
     Activity findById(Integer id);
     Activity save(Activity activity);
     Activity update(Integer id, Activity activity);

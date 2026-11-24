@@ -41,8 +41,9 @@ public class ActivityRestController {
     public ResponseEntity<List<ActivityResponse>> getAll(
             @RequestParam(defaultValue = "false") boolean upcoming,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        return ResponseEntity.ok(activityService.search(upcoming, from, to).stream()
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String type) {
+        return ResponseEntity.ok(activityService.search(upcoming, from, to, type).stream()
                 .map(activityMapper::toResponse)
                 .toList());
     }
