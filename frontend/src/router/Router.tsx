@@ -13,6 +13,8 @@ import ProgressScreen from "../screens/progress/ProgressScreen";
 import ExercisesScreen from "../screens/exercises/ExercisesScreen";
 import ActivitiesScreen from "../screens/activities/ActivitiesScreen";
 import UnauthorizedScreen from "../screens/common/UnauthorizedScreen";
+import NotificationsScreen from "../screens/notifications/NotificationsScreen";
+import MessagesScreen from "../screens/messages/MessagesScreen";
 import AssignmentsManagementScreen from "../screens/admin/AssignmentsManagementScreen";
 import MyStudentsScreen from "../screens/trainer/MyStudentsScreen";
 
@@ -46,6 +48,8 @@ const router = createBrowserRouter(
             { path: "/progress", element: <ProgressScreen /> },
             { path: "/exercises", element: <ExercisesScreen /> },
             { path: "/activities", element: <ActivitiesScreen /> },
+            { path: "/notifications", element: <NotificationsScreen /> },
+            { path: "/messages", element: <MessagesScreen /> },
             { path: "/assignments", element: <AssignmentsManagementScreen /> },
             { path: "/my-students", element: <MyStudentsScreen /> },
           ],

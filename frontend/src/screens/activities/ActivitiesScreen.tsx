@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -24,6 +25,7 @@ import {
   createActivity,
   deleteActivity,
   getActivities,
+  getActivityById,
   updateActivity,
 } from "../../services/ActivityService";
 import { getAllSpaces } from "../../services/SpaceService";
@@ -66,7 +68,12 @@ const ActivitiesScreen = () => {
   const dispatch = useAppDispatch();
   const can = useAuthorities();
 
-  const [tab, setTab] = useState(TAB_UPCOMING);
+  const [searchParams] = useSearchParams();
+  const linkedActivityId = Number(searchParams.get("activity")) || null;
+  const linkedTab = searchParams.get("tab") === "spaces" ? TAB_SPACES : TAB_UPCOMING;
+  const [tab, setTab] = useState(linkedTab);
+  // HU15: evento al que lleva una notificacion. Se muestra aunque los filtros lo oculten.
+  const [linkedActivity, setLinkedActivity] = useState<ActivityResponse | null>(null);
   const [activities, setActivities] = useState<ActivityResponse[]>([]);
   const [enrollments, setEnrollments] = useState<EnrollmentResponse[]>([]);
   const [spaces, setSpaces] = useState<SpaceResponse[]>([]);
@@ -125,6 +132,29 @@ const ActivitiesScreen = () => {
       })();
     }
   }, [load, rangeError]);
+
+  // Si se llega desde otra notificacion estando ya en esta pantalla, cambia a la pestaña pedida.
+  const [lastLinkedTab, setLastLinkedTab] = useState(linkedTab);
+  if (linkedTab !== lastLinkedTab) {
+    setLastLinkedTab(linkedTab);
+    setTab(linkedTab);
+  }
+
+  useEffect(() => {
+    if (!linkedActivityId) {
+      return;
+    }
+    void (async () => {
+      const res = await getActivityById(linkedActivityId);
+      setLinkedActivity(res.error ? null : res.data ?? null);
+      if (res.error) {
+        dispatch(showSnackbar({ message: "El evento de la notificación ya no existe", severity: "warning" }));
+      }
+    })();
+  }, [linkedActivityId, dispatch]);
+
+  const shownLinkedActivity =
+    linkedActivity && linkedActivity.idActivity === linkedActivityId ? linkedActivity : null;
 
   const notify = (message: string, severity: "success" | "error") => {
     dispatch(showSnackbar({ message, severity }));
@@ -241,6 +271,13 @@ const ActivitiesScreen = () => {
       </Tabs>
 
       {error && <Alert severity="error">{error}</Alert>}
+
+      {tab === TAB_UPCOMING && shownLinkedActivity && (
+        <Stack spacing={1}>
+          <Typography variant="subtitle1" component="h2" sx={{ fontWeight: 700 }}>Evento de tu notificación</Typography>
+          <Grid container spacing={2}>{renderActivity(shownLinkedActivity)}</Grid>
+        </Stack>
+      )}
 
       {tab === TAB_UPCOMING && (
         <>

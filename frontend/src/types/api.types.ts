@@ -313,41 +313,41 @@ export interface MessageResponse {
   id: number;
   senderId: number;
   senderName?: string;
-  receiverId?: number;
+  receiverId: number;
   receiverName?: string;
   content: string;
   sentAt: string; // LocalDateTime
 }
 
+// El remitente es el usuario de la sesion; el backend lo toma de la cookie.
 export type MessageRequest = {
-  senderId: number;
-  receiverId: number | null;
+  receiverIds: number[];
   content: string;
-  sentAt: string;
 };
+
+export interface ContactResponse {
+  idUser: number;
+  firstName: string;
+  lastName: string;
+  institutionalEmail: string;
+  relation: 'TRAINEE' | 'TRAINER';
+}
+
+export type NotificationType = 'NEW_ACTIVITY' | 'NEW_SPACE' | 'NEW_MESSAGE';
+export type NotificationReferenceType = 'ACTIVITY' | 'SPACE' | 'MESSAGE';
 
 export interface NotificationResponse {
   idNotification: number;
   userTargetId: number;
-  userSourceId: number;
-  type: string;
+  userSourceId: number | null;
+  userSourceName: string;
+  type: NotificationType;
   message: string;
   referenceId: number;
-  referenceType: string;
+  referenceType: NotificationReferenceType;
   dateSent: string; // LocalDateTime
   isRead: boolean;
 }
-
-export type NotificationRequest = {
-  userTargetId: number;
-  userSourceId: number;
-  type: string;
-  message: string;
-  referenceId: number;
-  referenceType: string;
-  dateSent: string;
-  isRead: boolean;
-};
 
 // --- ERROR HANDLING ---
 

@@ -17,6 +17,10 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import CssBaseline from "@mui/material/CssBaseline";
+import Badge from "@mui/material/Badge";
+import Tooltip from "@mui/material/Tooltip";
+import RealTimeWrapper from "../../components/wrapper/RealTimeWrapper";
+import { useAppSelector } from "../../hooks/useSelector";
 
 import HomeIcon from "@mui/icons-material/Home";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
@@ -27,6 +31,8 @@ import PersonIcon from "@mui/icons-material/Person";
 import GroupsIcon from "@mui/icons-material/Groups";
 import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import LogoutIcon from "@mui/icons-material/Logout";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import ChatIcon from "@mui/icons-material/Chat";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import React from "react";
 
@@ -71,6 +77,16 @@ const navItems: NavItem[] = [
     icon: <ShowChartIcon />,
   },
   {
+    label: "Mensajes",
+    path: "/messages",
+    icon: <ChatIcon />,
+    requiredAuthorities: ["LIST_MESSAGE", "VIEW_OWN_PROFILE"],
+  },
+  {
+    label: "Notificaciones",
+    path: "/notifications",
+    icon: <NotificationsIcon />,
+    requiredAuthorities: ["LIST_NOTIFICATION"],
     label: "Mis alumnos",
     path: "/my-students",
     icon: <GroupsIcon />,
@@ -95,6 +111,13 @@ const MainLayout = () => {
   const { user, logout } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
+
+  const unreadNotifications = useAppSelector(
+    (state) => state.realTime.notifications.filter((n) => !n.isRead).length,
+  );
+  const unreadMessages = useAppSelector(
+    (state) => state.realTime.notifications.filter((n) => !n.isRead && n.type === "NEW_MESSAGE").length,
+  );
 
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isCollapsed, setIsCollapsed] = React.useState(false);
@@ -203,7 +226,16 @@ const MainLayout = () => {
                           transition: 'color 0.2s' 
                       }}
                   >
-                      {item.icon}
+                      <Badge
+                        color="error"
+                        variant={isCollapsed && !isMobile ? "dot" : "standard"}
+                        badgeContent={
+                          item.path === "/notifications" ? unreadNotifications
+                            : item.path === "/messages" ? unreadMessages : 0
+                        }
+                      >
+                        {item.icon}
+                      </Badge>
                   </ListItemIcon>
                   <ListItemText
                       primary={item.label}
@@ -373,12 +405,26 @@ const MainLayout = () => {
               </Box>
             </Stack>
 
+            {hasAuthority(["LIST_NOTIFICATION"]) && (
+              <Tooltip title="Notificaciones">
+                <IconButton
+                  aria-label={`Notificaciones: ${unreadNotifications} sin leer`}
+                  onClick={() => navigate("/notifications")}
+                >
+                  <Badge badgeContent={unreadNotifications} color="error">
+                    <NotificationsIcon color="primary" />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+            )}
           </Stack>
         </Paper>
 
-        <Box id="contenido" tabIndex={-1} sx={{ outline: "none" }}>
-          <Outlet />
-        </Box>
+        <RealTimeWrapper>
+          <Box id="contenido" tabIndex={-1} sx={{ outline: "none" }}>
+            <Outlet />
+          </Box>
+        </RealTimeWrapper>
       </Box>
 
       {/* Global components */}

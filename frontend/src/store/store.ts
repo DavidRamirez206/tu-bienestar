@@ -1,10 +1,12 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import uiReducer from './slices/uiSlice';
+import realTimeReducer from './slices/realTimeSlice';
 
 const rootReducer = combineReducers({
   auth: authReducer,
   ui: uiReducer,
+  realTime: realTimeReducer,
 });
 
 export const store = configureStore({
