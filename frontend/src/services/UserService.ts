@@ -25,6 +25,13 @@ export const updateUser = async (id: number, request: UserRequest) => {
     );
 };
 
+// Activa o desactiva la cuenta sin borrarla (HU9.1).
+export const setUserActive = async (id: number, active: boolean) => {
+    return safeRequest<UserResponse>(
+        axiosClient.put(`/api/v1/users/${id}/active`, { active })
+    );
+};
+
 export const deleteUser = async (id: number) => {
     return safeRequest<void>(
         axiosClient.delete(`/api/v1/users/${id}`)

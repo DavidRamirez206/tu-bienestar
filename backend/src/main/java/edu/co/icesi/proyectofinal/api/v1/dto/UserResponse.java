@@ -15,4 +15,5 @@ public class UserResponse {
     private String lastName;
     private String institutionalEmail;
     private Integer age;
+    private boolean active;
 }

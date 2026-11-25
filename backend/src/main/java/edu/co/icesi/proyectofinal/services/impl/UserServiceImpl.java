@@ -119,6 +119,16 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(existing);
     }
 
+    /** Activa o desactiva la cuenta sin borrarla: el usuario conserva asignaciones e historial (HU9.1). */
+    @Override
+    @Transactional
+    public User setUserActive(Integer userId, boolean active) {
+        User user = userRepository.getUserByIdUser(userId)
+                .orElseThrow(() -> new RuntimeException("User with id " + userId + " not found"));
+        user.setActive(active);
+        return userRepository.save(user);
+    }
+
     public void updateUserRoles(Integer userId, List<Long> roleIds){
 
         User user = userRepository.findById(userId).orElseThrow();

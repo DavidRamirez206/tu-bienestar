@@ -39,6 +39,7 @@ export interface UserResponse {
   lastName: string;
   institutionalEmail: string;
   age: number;
+  active?: boolean;
 }
 
 export type UserRequest = {

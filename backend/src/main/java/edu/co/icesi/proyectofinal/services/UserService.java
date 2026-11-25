@@ -25,6 +25,8 @@ public interface UserService {
 
     User updateUser(Integer userId, User updatedUser);
 
+    User setUserActive(Integer userId, boolean active);
+
     void updateUserRoles(Integer userId, List<Long> roleIds);
 
     List<Role> getAllRoles();

@@ -29,6 +29,10 @@ public class User {
 
     private Integer age;
 
+    /** Un usuario inactivo no puede iniciar sesion, pero conserva su historial (HU9.1). */
+    @Column(nullable = false)
+    private boolean active = true;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserRole> userRoles;
 

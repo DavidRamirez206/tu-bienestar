@@ -1,5 +1,6 @@
 package edu.co.icesi.proyectofinal.api.v1.controller;
 
+import edu.co.icesi.proyectofinal.api.v1.dto.UserActiveRequest;
 import edu.co.icesi.proyectofinal.api.v1.dto.UserRequest;
 import edu.co.icesi.proyectofinal.api.v1.dto.UserResponse;
 import edu.co.icesi.proyectofinal.api.v1.mapper.UserMapper;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -107,6 +109,24 @@ public class UserRestController {
 
         User user = userMapper.toEntity(userRequest);
         User updatedUser = userService.updateUser(id, user);
+        return ResponseEntity.ok(userMapper.toResponse(updatedUser));
+    }
+
+    @Operation(
+            summary = "Activate or deactivate a user",
+            description = "Enables or disables the account without deleting it. A disabled user cannot log in "
+                    + "but keeps their assignments and history.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Account state updated",
+                            content = @Content(schema = @Schema(implementation = UserResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+            }
+    )
+    @PutMapping("/{id}/active")
+    @PreAuthorize("hasAuthority('EDIT_USER')")
+    public ResponseEntity<UserResponse> setActive(@PathVariable Integer id,
+                                                  @Valid @RequestBody UserActiveRequest request) {
+        User updatedUser = userService.setUserActive(id, request.getActive());
         return ResponseEntity.ok(userMapper.toResponse(updatedUser));
     }
 

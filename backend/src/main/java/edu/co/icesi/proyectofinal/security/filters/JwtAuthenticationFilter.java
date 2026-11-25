@@ -94,6 +94,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
+        // Si el administrador desactivo la cuenta, la sesion que ya tenia deja de servir (HU9.1).
+        if (!userDetails.isEnabled()) {
+            SecurityContextHolder.clearContext();
+            return;
+        }
+
         if (jwtService.isTokenValid(jwt, userDetails)) {
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     userDetails,

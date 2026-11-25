@@ -19,6 +19,7 @@ import {
   reassignTrainer,
   removeAssignment,
 } from "../../services/AssignmentService";
+import { setUserActive } from "../../services/UserService";
 import { useAppDispatch } from "../../hooks/useDispatch";
 import useAuthorities from "../../hooks/useAuthorities";
 import { showSnackbar } from "../../store/slices/uiSlice";
@@ -40,6 +41,7 @@ const AssignmentsManagementScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toRemove, setToRemove] = useState<AssignmentResponse | null>(null);
+  const [toDeactivate, setToDeactivate] = useState<UserResponse | null>(null);
 
   const load = useCallback(async () => {
     const [traineesRes, trainersRes, assignmentsRes] = await Promise.all([
@@ -103,6 +105,21 @@ const AssignmentsManagementScreen = () => {
     await load();
   };
 
+  // HU9.1: desactivar un entrenador no lo borra; deja de poder entrar y no se puede asignar.
+  const handleToggleActive = async (trainer: UserResponse, active: boolean) => {
+    setToDeactivate(null);
+    const res = await setUserActive(trainer.idUser, active);
+    if (res.error) {
+      notify(res.message || "No se pudo cambiar el estado del entrenador", "error");
+    } else {
+      notify(`${fullName(trainer)} quedó ${active ? "activo" : "inactivo"}`, "success");
+    }
+    await load();
+  };
+
+  const isActive = (trainer: UserResponse) => trainer.active !== false;
+  const activeTrainers = trainers.filter(isActive);
+
   const term = search.trim().toLowerCase();
   const visibleTrainees = trainees.filter((trainee) =>
     !term ||
@@ -140,6 +157,46 @@ const AssignmentsManagementScreen = () => {
         <Alert severity="warning">No hay entrenadores registrados para asignar.</Alert>
       )}
 
+      {trainers.length > 0 && (
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 800 }}>Entrenadores</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Un entrenador inactivo no puede entrar a la plataforma ni recibir nuevos alumnos, pero conserva su
+            historial.
+          </Typography>
+          <Grid container spacing={2}>
+            {trainers.map((trainer) => (
+              <Grid key={trainer.idUser} size={{ xs: 12, sm: 6, lg: 4 }}>
+                <EntityCard>
+                  <Stack direction="row" spacing={1} sx={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>{fullName(trainer)}</Typography>
+                    <Chip
+                      size="small"
+                      color={isActive(trainer) ? "success" : "default"}
+                      label={isActive(trainer) ? "Activo" : "Inactivo"}
+                    />
+                  </Stack>
+                  <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: "anywhere" }}>
+                    {trainer.institutionalEmail}
+                  </Typography>
+                  {can("EDIT_USER") && (
+                    <Stack direction="row" spacing={1} sx={{ pt: 1 }}>
+                      {isActive(trainer) ? (
+                        <Button color="error" onClick={() => setToDeactivate(trainer)}>Desactivar</Button>
+                      ) : (
+                        <Button variant="contained" onClick={() => void handleToggleActive(trainer, true)}>
+                          Activar
+                        </Button>
+                      )}
+                    </Stack>
+                  )}
+                </EntityCard>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      )}
+
       {visibleTrainees.length === 0 ? (
         <Alert severity="info">No hay usuarios para mostrar.</Alert>
       ) : (
@@ -172,9 +229,9 @@ const AssignmentsManagementScreen = () => {
                     onChange={(e) =>
                       setSelected((prev) => ({ ...prev, [trainee.idUser]: Number(e.target.value) }))
                     }
-                    disabled={trainers.length === 0}
+                    disabled={activeTrainers.length === 0}
                   >
-                    {trainers.map((trainer) => (
+                    {activeTrainers.map((trainer) => (
                       <MenuItem key={trainer.idUser} value={trainer.idUser}>
                         {fullName(trainer)}
                         {trainer.idUser === current?.trainerId ? " (actual)" : ""}
@@ -197,6 +254,15 @@ const AssignmentsManagementScreen = () => {
           })}
         </Grid>
       )}
+
+      <ConfirmDialog
+        open={toDeactivate !== null}
+        title="Desactivar entrenador"
+        message={`¿Seguro que quieres desactivar a ${toDeactivate ? fullName(toDeactivate) : ""}? No podrá iniciar sesión hasta que lo actives de nuevo.`}
+        confirmLabel="Desactivar"
+        onConfirm={() => void handleToggleActive(toDeactivate as UserResponse, false)}
+        onClose={() => setToDeactivate(null)}
+      />
 
       <ConfirmDialog
         open={toRemove !== null}
