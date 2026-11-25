@@ -1,5 +1,7 @@
 -- HU8.2: tipo de evento (CLASE, TORNEO o GIMNASIO) y horarios de prueba.
 -- Se puede ejecutar mas de una vez sin duplicar datos.
+-- La columna type la crea la aplicacion al arrancar si falta (ver MissingColumnsInitializer);
+-- los horarios de prueba de abajo si hay que cargarlos a mano.
 ALTER TABLE activities ADD COLUMN IF NOT EXISTS type varchar(20);
 
 UPDATE activities SET type = 'GIMNASIO' WHERE type IS NULL AND name IN ('Bodybuilding 101', 'Semana del bienestar');

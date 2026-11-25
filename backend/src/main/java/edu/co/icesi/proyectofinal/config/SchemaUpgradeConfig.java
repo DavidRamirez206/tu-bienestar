@@ -14,13 +14,13 @@ import javax.sql.DataSource;
 public class SchemaUpgradeConfig {
 
     @Bean
-    public UsersActiveColumnInitializer usersActiveColumnInitializer(DataSource dataSource) {
-        return new UsersActiveColumnInitializer(dataSource);
+    public MissingColumnsInitializer missingColumnsInitializer(DataSource dataSource) {
+        return new MissingColumnsInitializer(dataSource);
     }
 
     /** Hibernate valida el esquema al crearse, asi que el parche tiene que correr antes. */
     @Bean
-    public static EntityManagerFactoryDependsOnPostProcessor usersActiveColumnDependsOnPostProcessor() {
-        return new EntityManagerFactoryDependsOnPostProcessor("usersActiveColumnInitializer");
+    public static EntityManagerFactoryDependsOnPostProcessor missingColumnsDependsOnPostProcessor() {
+        return new EntityManagerFactoryDependsOnPostProcessor("missingColumnsInitializer");
     }
 }
