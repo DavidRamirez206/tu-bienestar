@@ -1,6 +1,7 @@
 package edu.co.icesi.proyectofinal.integration;
 
 import edu.co.icesi.proyectofinal.entity.Assignment;
+import edu.co.icesi.proyectofinal.entity.Progress;
 import edu.co.icesi.proyectofinal.entity.Role;
 import edu.co.icesi.proyectofinal.entity.Routine;
 import edu.co.icesi.proyectofinal.entity.User;
@@ -8,6 +9,7 @@ import edu.co.icesi.proyectofinal.entity.UserRole;
 import edu.co.icesi.proyectofinal.entity.keys.AssignmentId;
 import edu.co.icesi.proyectofinal.entity.keys.UserRoleId;
 import edu.co.icesi.proyectofinal.repository.AssignmentRepository;
+import edu.co.icesi.proyectofinal.repository.ProgressRepository;
 import edu.co.icesi.proyectofinal.repository.RoleRepository;
 import edu.co.icesi.proyectofinal.repository.RoutineRepository;
 import edu.co.icesi.proyectofinal.repository.UserRepository;
@@ -25,6 +27,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
@@ -33,7 +36,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/** HU5 Ver rutinas de los usuarios asignados. */
+/** HU5 Ver rutinas y progreso de los usuarios asignados. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
@@ -45,6 +48,7 @@ class TraineeRoutinesIntegrationTest {
     @Autowired private UserRoleRepository userRoleRepository;
     @Autowired private AssignmentRepository assignmentRepository;
     @Autowired private RoutineRepository routineRepository;
+    @Autowired private ProgressRepository progressRepository;
     @Autowired private EntityManager entityManager;
 
     private User juan;
@@ -64,6 +68,8 @@ class TraineeRoutinesIntegrationTest {
         assign(juan, trainerOne);
         routine(juan, "Fuerza de Juan");
         routine(maria, "Cardio de Maria");
+        progress(juan, 12);
+        progress(maria, 30);
 
         entityManager.flush();
         entityManager.clear();
@@ -111,6 +117,14 @@ class TraineeRoutinesIntegrationTest {
         routine.setCreationDate(LocalDate.now());
         routine.setPredesigned(false);
         routineRepository.save(routine);
+    }
+
+    private void progress(User owner, int reps) {
+        Progress entry = new Progress();
+        entry.setUserProgress(owner);
+        entry.setDateLogged(LocalDateTime.now());
+        entry.setReps(reps);
+        progressRepository.save(entry);
     }
 
     private RequestPostProcessor as(User user, String... authorities) {
@@ -166,6 +180,47 @@ class TraineeRoutinesIntegrationTest {
                         .with(as(admin, "ADMIN", "LIST_ROUTINE")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("Cardio de Maria"));
+    }
+
+    // ---------- Escenario: detalle del asignado, con su progreso
+
+    @Test
+    void trainerSeesTheProgressOfTheAssignedTrainee() throws Exception {
+        mockMvc.perform(get("/api/v1/progress/user/" + juan.getIdUser())
+                        .with(as(trainerOne, "TRAINER", "LIST_PROGRESS")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].reps").value(12))
+                .andExpect(jsonPath("$[0].userId").value(juan.getIdUser()));
+    }
+
+    @Test
+    void trainerCannotSeeTheProgressOfSomeoneElsesTrainee() throws Exception {
+        mockMvc.perform(get("/api/v1/progress/user/" + maria.getIdUser())
+                        .with(as(trainerOne, "TRAINER", "LIST_PROGRESS")))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/v1/progress/user/" + juan.getIdUser())
+                        .with(as(trainerTwo, "TRAINER", "LIST_PROGRESS")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void traineeSeesOwnProgressButNotSomeoneElses() throws Exception {
+        mockMvc.perform(get("/api/v1/progress/user/" + juan.getIdUser())
+                        .with(as(juan, "TRAINEE", "LIST_PROGRESS")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)));
+        mockMvc.perform(get("/api/v1/progress/user/" + maria.getIdUser())
+                        .with(as(juan, "TRAINEE", "LIST_PROGRESS")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminSeesTheProgressOfAnyUser() throws Exception {
+        mockMvc.perform(get("/api/v1/progress/user/" + maria.getIdUser())
+                        .with(as(admin, "ADMIN", "LIST_PROGRESS")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].reps").value(30));
     }
 
     @Test
