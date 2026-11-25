@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -104,7 +105,7 @@ public class RecommendationRestController {
             }
     )
     @PreAuthorize("hasAuthority('CREATE_RECOMMENDATION')")
-    public ResponseEntity<RecommendationResponse> create(@RequestBody RecommendationRequest request) {
+    public ResponseEntity<RecommendationResponse> create(@Valid @RequestBody RecommendationRequest request) {
         Recommendation recommendation = recommendationMapper.toEntity(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(recommendationMapper.toResponse(recommendationService.createRecommendation(recommendation)));
     }
@@ -121,7 +122,7 @@ public class RecommendationRestController {
             }
     )
     @PreAuthorize("hasAuthority('EDIT_RECOMMENDATION')")
-    public ResponseEntity<RecommendationResponse> update(@PathVariable Integer id, @RequestBody RecommendationRequest request, Principal principal) {
+    public ResponseEntity<RecommendationResponse> update(@PathVariable Integer id, @Valid @RequestBody RecommendationRequest request, Principal principal) {
         User currentUser = userService.getUserByEmail(principal.getName());
         Recommendation existing = recommendationService.getRecommendation(id);
 

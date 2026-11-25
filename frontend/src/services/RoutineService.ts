@@ -13,6 +13,13 @@ export const getRoutineById = async (id: number) => {
     );
 };
 
+// Rutinas de un usuario: el backend valida que sea tu alumno asignado.
+export const getRoutinesByUser = async (userId: number) => {
+    return safeRequest<RoutineResponse[]>(
+        axiosClient.get(`/api/v1/routines/user/${userId}`)
+    );
+};
+
 export const createRoutine = async (request: RoutineRequest) => {
     return safeRequest<RoutineResponse>(
         axiosClient.post('/api/v1/routines', request)

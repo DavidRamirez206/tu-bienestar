@@ -4,6 +4,7 @@ import edu.co.icesi.proyectofinal.api.v1.dto.ProgressRequest;
 import edu.co.icesi.proyectofinal.api.v1.dto.ProgressResponse;
 import edu.co.icesi.proyectofinal.api.v1.mapper.ProgressMapper;
 import edu.co.icesi.proyectofinal.entity.Progress;
+import edu.co.icesi.proyectofinal.services.AssignmentService;
 import edu.co.icesi.proyectofinal.services.ProgressService;
 import edu.co.icesi.proyectofinal.services.UserService;
 import edu.co.icesi.proyectofinal.entity.User;
@@ -30,12 +31,14 @@ public class ProgressRestController {
     private final ProgressService progressService;
     private final ProgressMapper progressMapper;
     private final UserService userService;
+    private final AssignmentService assignmentService;
 
-    public ProgressRestController(ProgressService progressService, ProgressMapper progressMapper, 
-                                UserService userService) {
+    public ProgressRestController(ProgressService progressService, ProgressMapper progressMapper,
+                                UserService userService, AssignmentService assignmentService) {
         this.progressService = progressService;
         this.progressMapper = progressMapper;
         this.userService = userService;
+        this.assignmentService = assignmentService;
     }
 
     @GetMapping
@@ -57,7 +60,8 @@ public class ProgressRestController {
     @GetMapping("/user/{userId}")
     @Operation(
             summary = "Get progress entries for a specific user",
-            description = "Retrieves a list of all progress entries for a specific user (Admin or owner; assigned Trainer in Sprint 1)",
+            description = "Retrieves a list of all progress entries for a specific user. Only the user, an "
+                    + "administrator or a trainer with that user assigned can see them.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "List of progress entries retrieved successfully"),
                     @ApiResponse(responseCode = "403", description = "Access denied")
@@ -67,18 +71,28 @@ public class ProgressRestController {
     public ResponseEntity<List<ProgressResponse>> getByUserId(@PathVariable Integer userId, Principal principal) {
         User currentUser = userService.getUserByEmail(principal.getName());
 
-        boolean isAdmin = currentUser.getUserRoles().stream()
-                .anyMatch(ur -> ur.getRole().getName().equals("ADMIN"));
-        
-        // Sprint 1: permitir también al entrenador asignado (AssignmentService)
-
-        if (!isAdmin && !currentUser.getIdUser().equals(userId)) {
+        if (!canSeeProgressOf(userId, currentUser)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         return ResponseEntity.ok(progressService.getByUserId(userId).stream()
                 .map(progressMapper::toResponse)
                 .collect(Collectors.toList()));
+    }
+
+    /** El propio usuario, un administrador o el entrenador que lo tiene asignado (HU5). */
+    private boolean canSeeProgressOf(Integer userId, User currentUser) {
+        if (currentUser.getIdUser().equals(userId) || isAdmin(currentUser)) {
+            return true;
+        }
+        return assignmentService.findByTrainerId(currentUser.getIdUser()).stream()
+                .anyMatch(assignment -> assignment.getUserAssignment() != null
+                        && assignment.getUserAssignment().getIdUser().equals(userId));
+    }
+
+    private boolean isAdmin(User user) {
+        return user.getUserRoles() != null && user.getUserRoles().stream()
+                .anyMatch(userRole -> "ADMIN".equals(userRole.getRole().getName()));
     }
 
     @GetMapping("/{id}")

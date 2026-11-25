@@ -1,5 +1,6 @@
 package edu.co.icesi.proyectofinal.api.v1.controller;
 
+import edu.co.icesi.proyectofinal.api.v1.dto.UserActiveRequest;
 import edu.co.icesi.proyectofinal.api.v1.dto.UserRequest;
 import edu.co.icesi.proyectofinal.api.v1.dto.UserResponse;
 import edu.co.icesi.proyectofinal.api.v1.mapper.UserMapper;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +25,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/users")
 @Tag(name = "Users", description = "Endpoints for managing system users")
 public class UserRestController {
+
+    private static final String TRAINER_ROLE = "TRAINER";
 
     private final UserService userService;
     private final UserMapper userMapper;
@@ -107,6 +111,53 @@ public class UserRestController {
 
         User user = userMapper.toEntity(userRequest);
         User updatedUser = userService.updateUser(id, user);
+        return ResponseEntity.ok(userMapper.toResponse(updatedUser));
+    }
+
+    @Operation(
+            summary = "List the trainers",
+            description = "Retrieves the users that have the TRAINER role, with their account state",
+            responses = {@ApiResponse(responseCode = "200", description = "Trainers retrieved successfully")}
+    )
+    @GetMapping("/trainers")
+    @PreAuthorize("hasAuthority('LIST_USER')")
+    public ResponseEntity<List<UserResponse>> getTrainers() {
+        return ResponseEntity.ok(userService.getUsersByRole(TRAINER_ROLE).stream()
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList()));
+    }
+
+    @Operation(
+            summary = "Create a trainer",
+            description = "Creates a user with the TRAINER role",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Trainer created",
+                            content = @Content(schema = @Schema(implementation = UserResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "Invalid data", content = @Content)
+            }
+    )
+    @PostMapping("/trainers")
+    @PreAuthorize("hasAuthority('CREATE_USER')")
+    public ResponseEntity<UserResponse> createTrainer(@RequestBody UserRequest userRequest) {
+        User trainer = userService.saveUserWithRole(userMapper.toEntity(userRequest), TRAINER_ROLE);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.toResponse(trainer));
+    }
+
+    @Operation(
+            summary = "Activate or deactivate a user",
+            description = "Enables or disables the account without deleting it. A disabled user cannot log in "
+                    + "but keeps their assignments and history.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Account state updated",
+                            content = @Content(schema = @Schema(implementation = UserResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+            }
+    )
+    @PutMapping("/{id}/active")
+    @PreAuthorize("hasAuthority('EDIT_USER')")
+    public ResponseEntity<UserResponse> setActive(@PathVariable Integer id,
+                                                  @Valid @RequestBody UserActiveRequest request) {
+        User updatedUser = userService.setUserActive(id, request.getActive());
         return ResponseEntity.ok(userMapper.toResponse(updatedUser));
     }
 

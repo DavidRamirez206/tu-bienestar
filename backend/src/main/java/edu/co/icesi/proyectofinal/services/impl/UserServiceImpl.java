@@ -65,6 +65,25 @@ public class UserServiceImpl implements UserService {
         return savedUser;
     }
 
+    /** Crea el usuario y le deja solamente el rol indicado, por ejemplo TRAINER (HU9.1). */
+    @Override
+    @Transactional
+    public User saveUserWithRole(User user, String roleName) {
+        Role role = roleRepository.findByName(roleName)
+                .orElseThrow(() -> new IllegalArgumentException("Role " + roleName + " is not configured"));
+
+        User saved = saveUser(user);
+        updateUserRoles(saved.getIdUser(), List.of(role.getId()));
+
+        return userRepository.getUserByIdUser(saved.getIdUser())
+                .orElseThrow(() -> new RuntimeException("User with id " + saved.getIdUser() + " not found"));
+    }
+
+    @Override
+    public List<User> getUsersByRole(String roleName) {
+        return userRepository.findDistinctByUserRolesRoleName(roleName);
+    }
+
     public void deleteUserById(Integer userId){
         if (!userRepository.existsById(userId)) {
             throw new IllegalArgumentException("User with id "+ userId +" not found");
@@ -117,6 +136,16 @@ public class UserServiceImpl implements UserService {
         if (updatedUser.getAge() != null) existing.setAge(updatedUser.getAge());
 
         return userRepository.save(existing);
+    }
+
+    /** Activa o desactiva la cuenta sin borrarla: el usuario conserva asignaciones e historial (HU9.1). */
+    @Override
+    @Transactional
+    public User setUserActive(Integer userId, boolean active) {
+        User user = userRepository.getUserByIdUser(userId)
+                .orElseThrow(() -> new RuntimeException("User with id " + userId + " not found"));
+        user.setActive(active);
+        return userRepository.save(user);
     }
 
     public void updateUserRoles(Integer userId, List<Long> roleIds){

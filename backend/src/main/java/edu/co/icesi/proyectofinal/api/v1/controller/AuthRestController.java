@@ -124,7 +124,8 @@ public class AuthRestController {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getInstitutionalEmail(),
-                user.getAge()
+                user.getAge(),
+                user.isActive()
         );
     }
 

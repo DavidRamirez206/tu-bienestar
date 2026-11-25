@@ -63,4 +63,10 @@ public class AppUser implements UserDetails {
     public String getUsername() {
         return user.getInstitutionalEmail();
     }
+
+    /** Un usuario desactivado por el administrador no puede iniciar sesion ni usar su sesion (HU9.1). */
+    @Override
+    public boolean isEnabled() {
+        return user.isActive();
+    }
 }

@@ -106,6 +106,23 @@ const HistoryScreen: React.FC = () => {
 
     const stats = useMemo(() => calculateDashboardStats(progress), [progress]);
 
+    // Periodo que cubre el reporte: del registro mas antiguo al mas reciente.
+    const reportPeriod = useMemo(() => {
+        if (progress.length === 0) {
+            return null;
+        }
+        const times = progress.map(p => new Date(p.dateLogged).getTime()).filter(t => !Number.isNaN(t));
+        if (times.length === 0) {
+            return null;
+        }
+        const format = (time: number) => new Date(time).toLocaleDateString('es-CO');
+        return { from: format(Math.min(...times)), to: format(Math.max(...times)) };
+    }, [progress]);
+
+    const periodLabel = reportPeriod
+        ? `DEL ${reportPeriod.from} AL ${reportPeriod.to}`
+        : 'SIN REGISTROS DE PROGRESO';
+
     if (loading) {
         return (
             <Box sx={{display: 'flex', justifyContent: 'center', py: 8}}>
@@ -303,6 +320,9 @@ const HistoryScreen: React.FC = () => {
                     <Box>
                         <Typography variant="h3" sx={{ fontWeight: 950, color: '#5353EE', letterSpacing: '-2px' }}>ICESI GYM</Typography>
                         <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.secondary', mt: 0.5 }}>Reporte de Rendimiento Personal</Typography>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#5353EE', mt: 1 }}>
+                            PERIODO DEL REPORTE: {periodLabel}
+                        </Typography>
                     </Box>
                     <Box sx={{ textAlign: 'right' }}>
                         <Typography variant="body1" sx={{ fontWeight: 700 }}>{user?.firstName} {user?.lastName}</Typography>

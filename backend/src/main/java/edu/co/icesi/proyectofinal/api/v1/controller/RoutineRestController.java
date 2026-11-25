@@ -4,6 +4,7 @@ import edu.co.icesi.proyectofinal.api.v1.dto.RoutineRequest;
 import edu.co.icesi.proyectofinal.api.v1.dto.RoutineResponse;
 import edu.co.icesi.proyectofinal.api.v1.mapper.RoutineMapper;
 import edu.co.icesi.proyectofinal.entity.Routine;
+import edu.co.icesi.proyectofinal.services.AssignmentService;
 import edu.co.icesi.proyectofinal.services.RoutineService;
 import edu.co.icesi.proyectofinal.services.UserService;
 import edu.co.icesi.proyectofinal.entity.User;
@@ -34,11 +35,14 @@ public class RoutineRestController {
     private final RoutineService routineService;
     private final RoutineMapper routineMapper;
     private final UserService userService;
+    private final AssignmentService assignmentService;
 
-    public RoutineRestController(RoutineService routineService, RoutineMapper routineMapper, UserService userService) {
+    public RoutineRestController(RoutineService routineService, RoutineMapper routineMapper, UserService userService,
+                                 AssignmentService assignmentService) {
         this.routineService = routineService;
         this.routineMapper = routineMapper;
         this.userService = userService;
+        this.assignmentService = assignmentService;
     }
 
     private static final Set<String> VALID_LEVELS = Set.of("Principiante", "Intermedio", "Avanzado");
@@ -106,6 +110,45 @@ public class RoutineRestController {
                 .map(routineMapper::toResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(routineResponses);
+    }
+
+    @Operation(
+            summary = "Get the routines of a user",
+            description = "Retrieves the routines of the given user. Only the user, an administrator or a trainer "
+                    + "with that user assigned can see them.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Routines retrieved successfully"),
+                    @ApiResponse(responseCode = "403", description = "The user is not assigned to the trainer", content = @Content)
+            }
+    )
+    @GetMapping("/user/{userId}")
+    @PreAuthorize("hasAuthority('LIST_ROUTINE')")
+    public ResponseEntity<List<RoutineResponse>> getByUser(@PathVariable Integer userId, Principal principal) {
+        User currentUser = userService.getUserByEmail(principal.getName());
+
+        if (!canSeeRoutinesOf(userId, currentUser)) {
+            throw new AccessDeniedException("You can only see the routines of your assigned trainees");
+        }
+
+        List<RoutineResponse> routines = routineService.findByUserId(userId).stream()
+                .map(routineMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(routines);
+    }
+
+    /** El propio usuario, un administrador o el entrenador que lo tiene asignado. */
+    private boolean canSeeRoutinesOf(Integer userId, User currentUser) {
+        if (currentUser.getIdUser().equals(userId) || isAdmin(currentUser)) {
+            return true;
+        }
+        return assignmentService.findByTrainerId(currentUser.getIdUser()).stream()
+                .anyMatch(assignment -> assignment.getUserAssignment() != null
+                        && assignment.getUserAssignment().getIdUser().equals(userId));
+    }
+
+    private boolean isAdmin(User user) {
+        return user.getUserRoles() != null && user.getUserRoles().stream()
+                .anyMatch(userRole -> "ADMIN".equals(userRole.getRole().getName()));
     }
 
     @Operation(

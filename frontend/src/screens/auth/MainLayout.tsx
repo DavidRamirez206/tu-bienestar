@@ -30,6 +30,7 @@ import ShowChartIcon from "@mui/icons-material/ShowChart";
 import PersonIcon from "@mui/icons-material/Person";
 import GroupsIcon from "@mui/icons-material/Groups";
 import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
+import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
 import LogoutIcon from "@mui/icons-material/Logout";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import ChatIcon from "@mui/icons-material/Chat";
@@ -98,6 +99,12 @@ const navItems: NavItem[] = [
     label: "Asignar entrenadores",
     path: "/assignments",
     icon: <AssignmentIndIcon />,
+    requiredAuthorities: ["ADMIN"],
+  },
+  {
+    label: "Gestionar entrenadores",
+    path: "/trainers",
+    icon: <SupervisorAccountIcon />,
     requiredAuthorities: ["ADMIN"],
   },
   {

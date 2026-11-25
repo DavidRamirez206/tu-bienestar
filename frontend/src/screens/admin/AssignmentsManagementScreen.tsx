@@ -103,6 +103,9 @@ const AssignmentsManagementScreen = () => {
     await load();
   };
 
+  // Un entrenador inactivo no puede recibir alumnos nuevos (HU9.1).
+  const activeTrainers = trainers.filter((trainer) => trainer.active !== false);
+
   const term = search.trim().toLowerCase();
   const visibleTrainees = trainees.filter((trainee) =>
     !term ||
@@ -140,6 +143,12 @@ const AssignmentsManagementScreen = () => {
         <Alert severity="warning">No hay entrenadores registrados para asignar.</Alert>
       )}
 
+      {trainers.length > 0 && activeTrainers.length === 0 && (
+        <Alert severity="warning">
+          Todos los entrenadores están inactivos. Actívalos en «Gestionar entrenadores» para poder asignarlos.
+        </Alert>
+      )}
+
       {visibleTrainees.length === 0 ? (
         <Alert severity="info">No hay usuarios para mostrar.</Alert>
       ) : (
@@ -172,9 +181,9 @@ const AssignmentsManagementScreen = () => {
                     onChange={(e) =>
                       setSelected((prev) => ({ ...prev, [trainee.idUser]: Number(e.target.value) }))
                     }
-                    disabled={trainers.length === 0}
+                    disabled={activeTrainers.length === 0}
                   >
-                    {trainers.map((trainer) => (
+                    {activeTrainers.map((trainer) => (
                       <MenuItem key={trainer.idUser} value={trainer.idUser}>
                         {fullName(trainer)}
                         {trainer.idUser === current?.trainerId ? " (actual)" : ""}
