@@ -16,6 +16,7 @@ import UnauthorizedScreen from "../screens/common/UnauthorizedScreen";
 import NotificationsScreen from "../screens/notifications/NotificationsScreen";
 import MessagesScreen from "../screens/messages/MessagesScreen";
 import AssignmentsManagementScreen from "../screens/admin/AssignmentsManagementScreen";
+import TrainersManagementScreen from "../screens/admin/TrainersManagementScreen";
 import MyStudentsScreen from "../screens/trainer/MyStudentsScreen";
 
 // Cada historia agrega aqui sus rutas.
@@ -51,6 +52,11 @@ const router = createBrowserRouter(
             { path: "/notifications", element: <NotificationsScreen /> },
             { path: "/messages", element: <MessagesScreen /> },
             { path: "/assignments", element: <AssignmentsManagementScreen /> },
+            {
+              // Panel administrativo de entrenadores.
+              element: <ProtectedRoute requiredRoles={["ADMIN"]} />,
+              children: [{ path: "/trainers", element: <TrainersManagementScreen /> }],
+            },
             {
               // Solo los entrenadores (y el administrador) entran a "Mis alumnos".
               element: <ProtectedRoute requiredRoles={["TRAINER"]} />,

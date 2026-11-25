@@ -9,6 +9,10 @@ public interface UserService {
 
     User saveUser(User user);
 
+    User saveUserWithRole(User user, String roleName);
+
+    List<User> getUsersByRole(String roleName);
+
     void deleteUserById(Integer userId);
 
     User getUserById(Integer idUser);

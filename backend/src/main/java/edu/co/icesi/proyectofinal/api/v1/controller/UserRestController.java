@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 @Tag(name = "Users", description = "Endpoints for managing system users")
 public class UserRestController {
 
+    private static final String TRAINER_ROLE = "TRAINER";
+
     private final UserService userService;
     private final UserMapper userMapper;
 
@@ -110,6 +112,35 @@ public class UserRestController {
         User user = userMapper.toEntity(userRequest);
         User updatedUser = userService.updateUser(id, user);
         return ResponseEntity.ok(userMapper.toResponse(updatedUser));
+    }
+
+    @Operation(
+            summary = "List the trainers",
+            description = "Retrieves the users that have the TRAINER role, with their account state",
+            responses = {@ApiResponse(responseCode = "200", description = "Trainers retrieved successfully")}
+    )
+    @GetMapping("/trainers")
+    @PreAuthorize("hasAuthority('LIST_USER')")
+    public ResponseEntity<List<UserResponse>> getTrainers() {
+        return ResponseEntity.ok(userService.getUsersByRole(TRAINER_ROLE).stream()
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList()));
+    }
+
+    @Operation(
+            summary = "Create a trainer",
+            description = "Creates a user with the TRAINER role",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Trainer created",
+                            content = @Content(schema = @Schema(implementation = UserResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "Invalid data", content = @Content)
+            }
+    )
+    @PostMapping("/trainers")
+    @PreAuthorize("hasAuthority('CREATE_USER')")
+    public ResponseEntity<UserResponse> createTrainer(@RequestBody UserRequest userRequest) {
+        User trainer = userService.saveUserWithRole(userMapper.toEntity(userRequest), TRAINER_ROLE);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.toResponse(trainer));
     }
 
     @Operation(

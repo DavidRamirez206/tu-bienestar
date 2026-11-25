@@ -19,7 +19,20 @@ export const createUser = async (request: UserRequest) => {
     );
 };
 
-export const updateUser = async (id: number, request: UserRequest) => {
+// Entrenadores: el administrador los lista, los crea con el rol TRAINER y los edita (HU9.1).
+export const getTrainers = async () => {
+    return safeRequest<UserResponse[]>(
+        axiosClient.get('/api/v1/users/trainers')
+    );
+};
+
+export const createTrainer = async (request: Partial<UserRequest> & { password: string }) => {
+    return safeRequest<UserResponse>(
+        axiosClient.post('/api/v1/users/trainers', request)
+    );
+};
+
+export const updateUser = async (id: number, request: Partial<UserRequest>) => {
     return safeRequest<UserResponse>(
         axiosClient.put(`/api/v1/users/${id}`, request)
     );
