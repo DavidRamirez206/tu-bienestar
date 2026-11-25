@@ -10,6 +10,8 @@ import NotFoundScreen from "../screens/common/NotFoundScreen";
 import RoutinesScreen from "../screens/routines/RoutinesScreen";
 import RoutineDetailScreen from "../screens/routines/RoutineDetailScreen";
 import ProgressScreen from "../screens/progress/ProgressScreen";
+import HistoryScreen from "../screens/profile/HistoryScreen";
+import RecommendationsScreen from "../screens/recommendations/RecommendationsScreen";
 import ExercisesScreen from "../screens/exercises/ExercisesScreen";
 import ActivitiesScreen from "../screens/activities/ActivitiesScreen";
 import UnauthorizedScreen from "../screens/common/UnauthorizedScreen";
@@ -47,6 +49,8 @@ const router = createBrowserRouter(
             { path: "/routines", element: <RoutinesScreen /> },
             { path: "/routines/:id", element: <RoutineDetailScreen /> },
             { path: "/progress", element: <ProgressScreen /> },
+            { path: "/history", element: <HistoryScreen /> },
+            { path: "/recommendations", element: <RecommendationsScreen /> },
             { path: "/exercises", element: <ExercisesScreen /> },
             { path: "/activities", element: <ActivitiesScreen /> },
             { path: "/notifications", element: <NotificationsScreen /> },

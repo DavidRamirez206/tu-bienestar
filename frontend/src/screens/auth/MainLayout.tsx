@@ -27,6 +27,8 @@ import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import DirectionsRunIcon from "@mui/icons-material/DirectionsRun";
 import EventIcon from "@mui/icons-material/Event";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
+import AssessmentIcon from "@mui/icons-material/Assessment";
+import TipsAndUpdatesIcon from "@mui/icons-material/TipsAndUpdates";
 import PersonIcon from "@mui/icons-material/Person";
 import GroupsIcon from "@mui/icons-material/Groups";
 import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
@@ -76,6 +78,16 @@ const navItems: NavItem[] = [
     label: "Progreso",
     path: "/progress",
     icon: <ShowChartIcon />,
+  },
+  {
+    label: "Mi rendimiento",
+    path: "/history",
+    icon: <AssessmentIcon />,
+  },
+  {
+    label: "Recomendaciones",
+    path: "/recommendations",
+    icon: <TipsAndUpdatesIcon />,
   },
   {
     label: "Mensajes",

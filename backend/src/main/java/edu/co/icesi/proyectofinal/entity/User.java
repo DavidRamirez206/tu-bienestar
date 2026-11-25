@@ -29,8 +29,12 @@ public class User {
 
     private Integer age;
 
-    /** Un usuario inactivo no puede iniciar sesion, pero conserva su historial (HU9.1). */
-    @Column(nullable = false)
+    /**
+     * Un usuario inactivo no puede iniciar sesion, pero conserva su historial (HU9.1).
+     * El valor por defecto queda en la base de datos para que los scripts que insertan
+     * usuarios sin nombrar esta columna sigan funcionando.
+     */
+    @Column(nullable = false, columnDefinition = "boolean default true not null")
     private boolean active = true;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
