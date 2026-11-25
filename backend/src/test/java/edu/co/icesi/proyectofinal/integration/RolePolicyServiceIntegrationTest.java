@@ -43,7 +43,7 @@ class RolePolicyServiceIntegrationTest {
     @BeforeEach
     void setUp() {
         role = new Role();
-        role.setName("ADMIN");
+        role.setName("TEST_ROLE");
         roleRepository.save(role);
 
         policy = new Policy();

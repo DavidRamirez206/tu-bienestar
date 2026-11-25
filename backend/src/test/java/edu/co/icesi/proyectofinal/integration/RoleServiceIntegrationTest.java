@@ -32,7 +32,7 @@ class RoleServiceIntegrationTest {
     @BeforeEach
     void setUp() {
 
-        role = createValidRole("ADMIN");
+        role = createValidRole("TEST_ROLE");
     }
 
     // -------- helper --------
@@ -45,12 +45,13 @@ class RoleServiceIntegrationTest {
     // -------- saveRole --------
     @Test
     void saveRole_shouldPersistInDatabase() {
+        long before = roleRepository.count();
         Role saved = roleService.saveRole(role);
 
         assertNotNull(saved.getId());
-        assertEquals("ADMIN", saved.getName());
+        assertEquals("TEST_ROLE", saved.getName());
 
-        assertEquals(1, roleRepository.findAll().size());
+        assertEquals(before + 1, roleRepository.count());
     }
 
     // -------- getRoleById --------
@@ -62,7 +63,7 @@ class RoleServiceIntegrationTest {
         Role found = roleService.getRoleById(saved.getId());
 
         assertEquals(saved.getId(), found.getId());
-        assertEquals("ADMIN", found.getName());
+        assertEquals("TEST_ROLE", found.getName());
     }
 
     // -------- getRoleById (exception) --------
@@ -79,12 +80,13 @@ class RoleServiceIntegrationTest {
     // -------- getRoles --------
     @Test
     void getRoles_shouldReturnAllRoles() {
-        roleRepository.save(createValidRole("ADMIN"));
-        roleRepository.save(createValidRole("USER"));
+        long before = roleRepository.count();
+        roleRepository.save(createValidRole("TEST_ROLE"));
+        roleRepository.save(createValidRole("TEST_USER"));
 
         List<Role> roles = roleService.getRoles();
 
-        assertEquals(2, roles.size());
+        assertEquals(before + 2, roles.size());
     }
 
     // -------- deleteRoleById --------
@@ -94,7 +96,7 @@ class RoleServiceIntegrationTest {
 
         roleService.deleteRoleById(saved.getId());
 
-        assertTrue(roleRepository.findAll().isEmpty());
+        assertFalse(roleRepository.existsById(saved.getId()));
     }
 
     // -------- updateRole --------

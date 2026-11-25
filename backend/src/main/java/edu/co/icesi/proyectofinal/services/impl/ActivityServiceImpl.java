@@ -72,6 +72,7 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public Activity save(Activity activity) {
         activity.setSpace(resolveSpace(activity));
+        activity.setType(typeOrDefault(activity.getType()));
         validateDates(activity);
         Activity saved = activityRepository.save(activity);
         notifyNewActivity(saved);
