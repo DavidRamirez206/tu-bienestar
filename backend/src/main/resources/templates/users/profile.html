@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout (~{::title}, ~{::section})}">
+<head>
+    <title>Mi Perfil</title>
+</head>
+<body>
+
+<section class="container mt-5">
+
+    <div class="row">
+
+        <!-- Card principal -->
+        <div class="col-md-6 mx-auto">
+
+            <div class="card shadow-sm p-4">
+
+                <!-- Header -->
+                <div class="text-center mb-3">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center"
+                         style="width: 80px; height: 80px; font-size: 30px;">
+                        <span th:text="${#strings.substring(user.firstName,0,1)}"></span>
+                    </div>
+
+                    <h4 class="mt-2"
+                        th:text="${user.firstName + ' ' + user.lastName}">
+                    </h4>
+
+                    <small class="text-muted"
+                           th:text="${user.institutionalEmail}">
+                    </small>
+                </div>
+
+                <hr>
+
+                <!-- Info -->
+                <div class="row mb-2">
+                    <div class="col-5 fw-bold">Edad:</div>
+                    <div class="col-7" th:text="${user.age}"></div>
+                </div>
+
+                <!-- Roles -->
+                <div class="row mb-2">
+                    <div class="col-5 fw-bold">Roles:</div>
+                    <div class="col-7">
+                        <span class="badge bg-primary me-1"
+                              th:each="ur : ${user.userRoles}"
+                              th:text="${ur.role.name}">
+                        </span>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Acciones -->
+                <div class="text-center">
+                    <a th:href="@{/users/edit-profile}"
+                       class="btn btn-outline-primary">
+                        Editar perfil
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</body>
+</html>

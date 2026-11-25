@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  secretos:
+    name: Buscar credenciales en el código
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ningún valor real en properties, compose ni .env versionados
+        run: |
+          FAIL=0
+          if git ls-files | grep -E '(^|/)\.env$'; then echo "::error::Hay un archivo .env versionado"; FAIL=1; fi
+          if git grep -nE "(password|secretkey)=[^$ ][^ ]{6,}" -- 'backend/src/main' 'compose.yaml'; then
+            echo "::error::Hay una credencial escrita en el código. Muévela a una variable de entorno."; FAIL=1
+          fi
+          exit $FAIL
+
+  backend:
+    name: Backend (Maven)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    # Las pruebas usan H2 en memoria (src/test/resources): no tocan Supabase ni necesitan secretos.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Compilar y ejecutar pruebas (unitarias + integración)
+        run: |
+          chmod +x mvnw
+          ./mvnw -B clean verify
+      - name: Reporte de cobertura (JaCoCo)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: backend/target/site/jacoco
+          if-no-files-found: ignore
+      - name: La imagen Docker construye (la misma que usa Render)
+        run: docker build -t mi-bienestar-backend:ci .
+
+  frontend:
+    name: Frontend (lint + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      HUSKY: 0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Lint (solo revisa, sin --fix)
+        run: npx eslint .
+      - name: Compilar (tsc + vite build)
+        run: npm run build

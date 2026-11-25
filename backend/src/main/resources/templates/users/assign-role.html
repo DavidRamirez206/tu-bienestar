@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout (~{::title}, ~{::section})}">
+<head>
+    <title>Asignar Rol</title>
+</head>
+<body>
+<section>
+<div class="container mt-5">
+    <h3>Asignar rol</h3>
+
+    <form th:action="@{/users/assign-role}" method="post">
+
+        <input type="hidden" name="userId" th:value="${user.idUser}">
+
+        <div class="form-check" th:each="role : ${roles}">
+
+            <input class="form-check-input"
+                   type="checkbox"
+                   name="roles"
+                   th:value="${role.id}"
+                   th:checked="${currentRoleIds.contains(role.id)}">
+            <label class="form-check-label"
+                   th:text="${role.name}">
+            </label>
+
+        </div>
+
+        <button class="btn btn-success mt-3">Guardar</button>
+
+    </form>
+</div>
+</section>
+</body>
+</html>

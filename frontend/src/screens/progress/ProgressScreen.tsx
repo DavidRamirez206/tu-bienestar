@@ -306,10 +306,10 @@ const ProgressScreen: React.FC = () => {
                             sx={{ px: 3, py: 2 }}
                             secondaryAction={
                                 <>
-                                    <IconButton color="primary" onClick={() => handleEdit(entry)}>
+                                    <IconButton color="primary" aria-label="Editar registro" title="Editar registro" onClick={() => handleEdit(entry)}>
                                         <EditIcon />
                                     </IconButton>
-                                    <IconButton edge="end" color="error" onClick={() => handleDelete(entry.idProgress)}>
+                                    <IconButton edge="end" color="error" aria-label="Eliminar registro" title="Eliminar registro" onClick={() => handleDelete(entry.idProgress)}>
                                         <DeleteIcon />
                                     </IconButton>
                                 </>

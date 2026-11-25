@@ -15,6 +15,8 @@ import ActivitiesScreen from "../screens/activities/ActivitiesScreen";
 import UnauthorizedScreen from "../screens/common/UnauthorizedScreen";
 import NotificationsScreen from "../screens/notifications/NotificationsScreen";
 import MessagesScreen from "../screens/messages/MessagesScreen";
+import AssignmentsManagementScreen from "../screens/admin/AssignmentsManagementScreen";
+import MyStudentsScreen from "../screens/trainer/MyStudentsScreen";
 
 // Cada historia agrega aqui sus rutas.
 const router = createBrowserRouter(
@@ -48,6 +50,8 @@ const router = createBrowserRouter(
             { path: "/activities", element: <ActivitiesScreen /> },
             { path: "/notifications", element: <NotificationsScreen /> },
             { path: "/messages", element: <MessagesScreen /> },
+            { path: "/assignments", element: <AssignmentsManagementScreen /> },
+            { path: "/my-students", element: <MyStudentsScreen /> },
           ],
         },
       ],

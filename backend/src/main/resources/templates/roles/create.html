@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout/layout :: layout (~{::title}, ~{::section})">
+<head>
+    <title>Crear Rol</title>
+</head>
+<body>
+<section>
+<div class="container mt-5">
+    <h3>Crear Rol</h3>
+
+    <form th:action="@{/roles/create}" method="post" th:object="${newRole}">
+        <input type="text" th:field="*{name}" class="form-control mb-3" placeholder="Nombre del rol">
+        <button class="btn btn-success">Crear</button>
+    </form>
+</div>
+</section>
+</body>
+</html>

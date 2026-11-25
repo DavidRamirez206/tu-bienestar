@@ -1,0 +1,23 @@
+<div th:fragment="sidebar" class="sidebar bg-dark text-white p-3">
+    <ul class="nav flex-column">
+
+        <li class="nav-item">
+            <a class="nav-link text-white" th:href="@{/users}">
+                <i class="fa fa-users"></i> Usuarios
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link text-white" th:href="@{/roles}">
+                <i class="fa fa-user-shield"></i> Roles
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link text-white" th:href="@{/policies}">
+                <i class="fa fa-file-signature"></i> Polizas
+            </a>
+        </li>
+
+    </ul>
+</div>

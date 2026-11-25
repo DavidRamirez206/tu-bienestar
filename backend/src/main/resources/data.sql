@@ -197,9 +197,9 @@ INSERT INTO spaces ( name, capacity, location) VALUES
 ( 'Yoga Studio', 20, 'Second Floor');
 
 -- Activities
-INSERT INTO activities ( id_space, name, description, start_date, end_date) VALUES
-( 1, 'Bodybuilding 101', 'Intro to weights', '2023-01-01', '2023-12-31'),
-( 2, 'Morning Yoga', 'Relaxing yoga session', '2023-01-01', '2023-12-31');
+INSERT INTO activities ( id_space, name, description, type, start_date, end_date) VALUES
+( 1, 'Bodybuilding 101', 'Intro to weights', 'GIMNASIO', '2023-01-01', '2023-12-31'),
+( 2, 'Morning Yoga', 'Relaxing yoga session', 'CLASE', '2023-01-01', '2023-12-31');
 
 -- Exercises
 INSERT INTO exercises (name, type, description, duration_min, difficulty, video_url, id_user, predefined) VALUES

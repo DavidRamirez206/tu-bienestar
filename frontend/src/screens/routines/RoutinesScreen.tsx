@@ -120,13 +120,13 @@ const RoutinesScreen: React.FC = () => {
             </Typography>
             <Stack spacing={1} sx={{ mt: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CalendarMonthIcon fontSize="small" sx={{ color: 'text.disabled' }} />
+                    <CalendarMonthIcon fontSize="small" sx={{ color: 'text.secondary' }} />
                     <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
                         {formatDateOnly(routine.creationDate)}
                     </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <FitnessCenterIcon fontSize="small" sx={{ color: 'text.disabled' }} />
+                    <FitnessCenterIcon fontSize="small" sx={{ color: 'text.secondary' }} />
                     <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
                         Ver detalles del entrenamiento
                     </Typography>

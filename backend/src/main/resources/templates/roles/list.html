@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout/layout :: layout (~{::title}, ~{::section})">
+<head>
+    <title>Roles</title>
+</head>
+<body>
+
+<section>
+<div class="container mt-5">
+    <h2>Roles</h2>
+
+    <a th:href="@{/roles/create}" class="btn btn-primary mb-3">Crear rol</a>
+
+    <table class="table table-striped">
+        <tr>
+            <th>Nombre</th>
+            <th>Acciones</th>
+        </tr>
+
+        <tr th:each="role : ${roles}">
+            <td th:text="${role.name}"></td>
+            <td>
+                <a th:href="@{/roles/assign-policies/{id}(id=${role.id})}"
+                   class="btn btn-warning btn-sm">Permisos</a>
+
+                <a th:href="@{/roles/delete/{id}(id=${role.id})}"
+                   class="btn btn-danger btn-sm">Eliminar</a>
+
+                <a th:href="@{/roles/edit/{id}(id=${role.id})}"
+                   class="btn btn-info btn-sm">
+                    <i class="fa fa-pen"></i>
+                </a>
+            </td>
+        </tr>
+    </table>
+</div>
+</section>
+</body>
+</html>

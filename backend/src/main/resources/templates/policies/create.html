@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout/layout :: layout (~{::title}, ~{::section})" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crear Poliza</title>
+</head>
+<body>
+<section>
+    <div class="container mt-5">
+        <h3>Crear Poliza</h3>
+
+        <form th:action="@{/policies/create}" method="post" th:object="${newPolicy}">
+            <input type="text" th:field="*{name}" class="form-control mb-3" placeholder="Nombre de la Póliza">
+            <input type="text" th:field="*{description}" class="form-control mb-3" placeholder="Descripción de la Póliza">
+            <input type="text" th:field="*{resource}" class="form-control mb-3" placeholder="Recurso que permite">
+            <input type="text" th:field="*{action}" class="form-control mb-3" placeholder="Acción que permite">
+            <button class="btn btn-success">Crear</button>
+        </form>
+    </div>
+</section>
+
+</body>
+</html>
