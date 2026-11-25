@@ -85,12 +85,19 @@ const RecommendationsScreen: React.FC = () => {
 
   const handleClose = () => setOpen(false);
 
+  // No se permiten recomendaciones vacias: el boton queda deshabilitado hasta que haya texto.
+  const canSubmit = Boolean(formData.userId) && formData.description.trim().length > 0;
+
   const handleSubmit = async () => {
     if (!formData.userId) {
         alert("Selecciona un usuario");
         return;
     }
-    const result = await createRecommendation(formData);
+    if (!formData.description.trim()) {
+        alert("La recomendación no puede estar vacía");
+        return;
+    }
+    const result = await createRecommendation({ ...formData, description: formData.description.trim() });
     if (result.error) {
       alert(result.message);
     } else {
@@ -215,13 +222,15 @@ const RecommendationsScreen: React.FC = () => {
             multiline
             rows={4}
             fullWidth
+            required
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            helperText="Escribe la recomendación para poder enviarla."
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancelar</Button>
-          <Button onClick={handleSubmit} variant="contained" color="primary">
+          <Button onClick={handleSubmit} variant="contained" color="primary" disabled={!canSubmit}>
             Enviar
           </Button>
         </DialogActions>
