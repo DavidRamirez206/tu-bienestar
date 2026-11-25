@@ -87,6 +87,8 @@ const navItems: NavItem[] = [
     path: "/notifications",
     icon: <NotificationsIcon />,
     requiredAuthorities: ["LIST_NOTIFICATION"],
+  },
+  {
     label: "Mis alumnos",
     path: "/my-students",
     icon: <GroupsIcon />,

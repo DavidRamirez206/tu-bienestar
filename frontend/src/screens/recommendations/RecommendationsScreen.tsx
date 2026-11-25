@@ -26,7 +26,7 @@ import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { getAllRecommendations, createRecommendation, deleteRecommendation } from '../../services/RecommendationService';
-import { getAssignmentsByTrainer } from '../../services/AssignmentService';
+import { getMyStudents } from '../../services/AssignmentService';
 import type { RecommendationResponse, RecommendationRequest, AssignmentResponse } from '../../types/api.types';
 import useAuth from '../../hooks/useAuth';
 import React, {useEffect, useState} from "react";
@@ -59,7 +59,7 @@ const RecommendationsScreen: React.FC = () => {
     }
 
     if (isTrainer && user?.idUser) {
-      const traineesResult = await getAssignmentsByTrainer(user.idUser);
+      const traineesResult = await getMyStudents();
       if (!traineesResult.error && traineesResult.data) {
         setTrainees(traineesResult.data);
       }
