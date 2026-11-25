@@ -51,7 +51,11 @@ const router = createBrowserRouter(
             { path: "/notifications", element: <NotificationsScreen /> },
             { path: "/messages", element: <MessagesScreen /> },
             { path: "/assignments", element: <AssignmentsManagementScreen /> },
-            { path: "/my-students", element: <MyStudentsScreen /> },
+            {
+              // Solo los entrenadores (y el administrador) entran a "Mis alumnos".
+              element: <ProtectedRoute requiredRoles={["TRAINER"]} />,
+              children: [{ path: "/my-students", element: <MyStudentsScreen /> }],
+            },
           ],
         },
       ],
