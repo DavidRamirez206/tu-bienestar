@@ -333,8 +333,8 @@ export interface ContactResponse {
   relation: 'TRAINEE' | 'TRAINER';
 }
 
-export type NotificationType = 'NEW_ACTIVITY' | 'NEW_SPACE' | 'NEW_MESSAGE';
-export type NotificationReferenceType = 'ACTIVITY' | 'SPACE' | 'MESSAGE';
+export type NotificationType = 'NEW_ACTIVITY' | 'NEW_SPACE' | 'NEW_MESSAGE' | 'NEW_RECOMMENDATION';
+export type NotificationReferenceType = 'ACTIVITY' | 'SPACE' | 'MESSAGE' | 'RECOMMENDATION';
 
 export interface NotificationResponse {
   idNotification: number;

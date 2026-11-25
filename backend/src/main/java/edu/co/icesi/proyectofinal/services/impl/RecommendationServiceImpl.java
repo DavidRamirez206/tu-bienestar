@@ -1,6 +1,5 @@
 package edu.co.icesi.proyectofinal.services.impl;
 
-import edu.co.icesi.proyectofinal.entity.Notification;
 import edu.co.icesi.proyectofinal.entity.Recommendation;
 import edu.co.icesi.proyectofinal.entity.User;
 import edu.co.icesi.proyectofinal.repository.RecommendationRepository;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -58,17 +56,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 
         Recommendation saved = recommendationRepository.save(recommendation);
         
-        Notification notification = new Notification();
-        notification.setType("NEW_RECOMMENDATION");
-        notification.setMessage("You have received a new recommendation from " + trainer.getFirstName() + " " + trainer.getLastName());
-        notification.setReferenceId(saved.getIdRecommendation());
-        notification.setReferenceType("RECOMMENDATION");
-        notification.setUserTarget(trainee);
-        notification.setUserSource(trainer);
-        notification.setDateSent(LocalDateTime.now());
-        notification.setRead(false);
-        
-        notificationService.saveNotification(notification);
+        // HU15: el alumno recibe el aviso en vivo y queda guardado si no estaba conectado.
+        notificationService.notifyUser(trainee, trainer, NotificationService.TYPE_NEW_RECOMMENDATION,
+                "Nueva recomendación de " + trainer.getFirstName() + " " + trainer.getLastName(),
+                saved.getIdRecommendation(), NotificationService.REF_RECOMMENDATION);
         
         return saved;
     }

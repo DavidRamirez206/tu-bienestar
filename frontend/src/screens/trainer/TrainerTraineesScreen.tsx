@@ -30,10 +30,10 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
 import PersonIcon from '@mui/icons-material/Person';
 import AddAlertIcon from '@mui/icons-material/AddAlert';
-import { getAssignmentsByTrainer } from '../../services/AssignmentService';
+import { getMyStudents } from '../../services/AssignmentService';
 import { getProgressByUserId } from '../../services/ProgressService';
 import { getAllExercises } from '../../services/ExerciseService';
-import { createNotification } from '../../services/NotificationService';
+import { sendMessage } from '../../services/MessageService';
 import type { AssignmentResponse, ProgressResponse, ExerciseResponse } from '../../types/api.types';
 import useAuth from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -59,7 +59,7 @@ const TrainerTraineesScreen: React.FC = () => {
     const fetchTrainees = async () => {
         if (!user?.idUser) {return;}
         setLoading(true);
-        const result = await getAssignmentsByTrainer(user.idUser);
+        const result = await getMyStudents();
         if (result.error) {
             setError(result.message || 'Error al cargar alumnos');
         } else if (result.data) {
@@ -89,15 +89,10 @@ const TrainerTraineesScreen: React.FC = () => {
   const handleSendAlert = async () => {
     if (!alertTarget || !alertMessage.trim() || !user) {return;}
     setSendingAlert(true);
-    const res = await createNotification({
-        userTargetId: alertTarget.userId,
-        userSourceId: user.idUser,
-        type: 'TRAINER_ALERT',
-        message: `Mensaje de tu entrenador (${user.firstName}): ${alertMessage}`,
-        referenceId: user.idUser,
-        referenceType: 'TRAINER',
-        dateSent: new Date().toISOString(),
-        isRead: false,
+    // HU16: la alerta viaja como mensaje; el alumno la recibe al instante y queda guardada.
+    const res = await sendMessage({
+        receiverIds: [alertTarget.userId],
+        content: alertMessage.trim(),
     });
 
     if (res.error) {
