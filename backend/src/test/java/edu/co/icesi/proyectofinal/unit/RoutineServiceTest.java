@@ -30,6 +30,9 @@ public class RoutineServiceTest {
     @Mock
     private ExerciseRepository exerciseRepository;
 
+    @Mock
+    private edu.co.icesi.proyectofinal.repository.ProgressRepository progressRepository;
+
     @InjectMocks
     private RoutineServiceImpl routineService;
 
@@ -83,6 +86,7 @@ public class RoutineServiceTest {
     @Test
     void delete_shouldCallRepository() {
         when(routineRepository.existsById(1)).thenReturn(true);
+        when(progressRepository.findByRoutineIdRoutine(1)).thenReturn(List.of());
         doNothing().when(routineRepository).deleteById(1);
         routineService.delete(1);
         verify(routineRepository).deleteById(1);

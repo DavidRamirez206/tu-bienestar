@@ -25,6 +25,9 @@ public class RecommendationServiceTest {
     private RecommendationRepository recommendationRepository;
 
     @Mock
+    private edu.co.icesi.proyectofinal.repository.UserRepository userRepository;
+
+    @Mock
     private edu.co.icesi.proyectofinal.services.NotificationService notificationService;
 
     @InjectMocks
@@ -75,13 +78,19 @@ public class RecommendationServiceTest {
     }
 
     @Test
-    void createRecommendation_shouldReturnSaved() {
+    void createRecommendation_shouldReturnSavedAndNotifyTrainee() {
+        User trainee = recommendation.getUser();
+        User trainer = recommendation.getTrainer();
+        when(userRepository.findById(1)).thenReturn(Optional.of(trainee));
+        when(userRepository.findById(2)).thenReturn(Optional.of(trainer));
         when(recommendationRepository.save(recommendation)).thenReturn(recommendation);
 
         Recommendation result = recommendationService.createRecommendation(recommendation);
 
         assertNotNull(result);
         assertEquals("Aumentar cardio", result.getDescription());
+        verify(notificationService).notifyUser(eq(trainee), eq(trainer), eq("NEW_RECOMMENDATION"),
+                anyString(), eq(1), eq("RECOMMENDATION"));
     }
 
     @Test
