@@ -28,7 +28,7 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import {getEnrollmentsByUserId} from '../../services/EnrollmentService';
+import {getMyEnrollments} from '../../services/EnrollmentService';
 import {getAllProgress} from '../../services/ProgressService';
 import {getAllExercises} from '../../services/ExerciseService';
 import {getAllRoutines} from '../../services/RoutineService';
@@ -54,7 +54,7 @@ const HistoryScreen: React.FC = () => {
             try {
                 setLoading(true);
                 const [enrollRes, progressRes, exercisesRes, routinesRes] = await Promise.all([
-                    getEnrollmentsByUserId(user.idUser),
+                    getMyEnrollments(),
                     getAllProgress(),
                     getAllExercises(),
                     getAllRoutines()
@@ -97,7 +97,7 @@ const HistoryScreen: React.FC = () => {
 
     const pastActivities = useMemo(() => {
         const now = new Date();
-        return enrollments.filter(e => e.activityEndDate && new Date(e.activityEndDate) < now);
+        return enrollments.filter(e => e.activity?.endDate && new Date(e.activity.endDate) < now);
     }, [enrollments]);
 
     const sortedProgress = useMemo(() => {
@@ -279,8 +279,8 @@ const HistoryScreen: React.FC = () => {
                                                 <Avatar sx={{ bgcolor: 'secondary.light' }}><CheckCircleIcon /></Avatar>
                                             </ListItemAvatar>
                                             <ListItemText
-                                                primary={<Typography variant="subtitle1" sx={{ fontWeight: 800 }}>{e.activityName}</Typography>}
-                                                secondary={`Inscrito el: ${new Date(e.enrollmentDate).toLocaleDateString()} • Finalizó: ${new Date(e.activityEndDate || '').toLocaleDateString()}`}
+                                                primary={<Typography variant="subtitle1" sx={{ fontWeight: 800 }}>{e.activity?.name}</Typography>}
+                                                secondary={`Inscrito el: ${new Date(e.enrollmentDate).toLocaleDateString()} • Finalizó: ${new Date(e.activity?.endDate || '').toLocaleDateString()}`}
                                             />
                                             <Chip label="Completado" color="success" size="small" sx={{ fontWeight: 700, borderRadius: 1.5 }} />
                                         </ListItem>

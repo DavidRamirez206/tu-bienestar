@@ -11,10 +11,12 @@ public interface NotificationService {
     String TYPE_NEW_ACTIVITY = "NEW_ACTIVITY";
     String TYPE_NEW_SPACE = "NEW_SPACE";
     String TYPE_NEW_MESSAGE = "NEW_MESSAGE";
+    String TYPE_NEW_RECOMMENDATION = "NEW_RECOMMENDATION";
 
     String REF_ACTIVITY = "ACTIVITY";
     String REF_SPACE = "SPACE";
     String REF_MESSAGE = "MESSAGE";
+    String REF_RECOMMENDATION = "RECOMMENDATION";
 
     /** Notificaciones del usuario, de la mas reciente a la mas antigua. */
     List<Notification> findMine(String email, boolean unreadOnly);
