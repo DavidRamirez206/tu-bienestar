@@ -13,9 +13,12 @@ type Props = {
   height?: number;
   color?: string;
   unit?: string;
+  /** Si se indica y no hay valores mayores que cero, se muestra este mensaje en lugar de las barras. */
+  emptyMessage?: string;
 };
 
-const SimpleBarChart: React.FC<Props> = ({ data, title, subtitle, height = 180, color = 'primary.main', unit = '' }) => {
+const SimpleBarChart: React.FC<Props> = ({ data, title, subtitle, height = 180, color = 'primary.main', unit = '', emptyMessage }) => {
+  const isEmpty = data.every(d => d.value <= 0);
   const maxValue = Math.max(...data.map(d => d.value), 1);
   const barWidth = 35;
   const gap = 15;
@@ -31,6 +34,27 @@ const SimpleBarChart: React.FC<Props> = ({ data, title, subtitle, height = 180, 
           </Typography>
       )}
       
+      {emptyMessage && isEmpty ? (
+        <Box
+          role="status"
+          sx={{
+            height,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            border: '1px dashed',
+            borderColor: 'divider',
+            borderRadius: 2,
+            px: 2,
+          }}
+        >
+          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+            {emptyMessage}
+          </Typography>
+        </Box>
+      ) : (
       <Box
         role="list"
         aria-label={title}
@@ -84,6 +108,7 @@ const SimpleBarChart: React.FC<Props> = ({ data, title, subtitle, height = 180, 
           );
         })}
       </Box>
+      )}
     </Box>
   );
 };

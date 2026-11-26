@@ -17,7 +17,10 @@ import {
     Tab,
     Stack,
     Avatar,
-    Button
+    Button,
+    TextField,
+    ToggleButton,
+    ToggleButtonGroup
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import jsPDF from 'jspdf';
@@ -35,7 +38,8 @@ import {getAllRoutines} from '../../services/RoutineService';
 import type {EnrollmentResponse, ProgressResponse, ExerciseResponse, RoutineResponse} from '../../types/api.types';
 import useAuth from '../../hooks/useAuth';
 import SimpleBarChart from '../../components/common/SimpleBarChart';
-import { calculateDashboardStats } from '../../utils/stats.utils';
+import { calculateDashboardStats, calculatePeriodCharts, filterProgressByDateRange } from '../../utils/stats.utils';
+import type { StatsPeriod } from '../../utils/stats.utils';
 
 const HistoryScreen: React.FC = () => {
     const [enrollments, setEnrollments] = useState<EnrollmentResponse[]>([]);
@@ -45,6 +49,9 @@ const HistoryScreen: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [tabValue, setTabValue] = useState(0);
+    const [period, setPeriod] = useState<StatsPeriod>('week');
+    const [fromDate, setFromDate] = useState('');
+    const [toDate, setToDate] = useState('');
     const {user} = useAuth();
 
     useEffect(() => {
@@ -105,6 +112,16 @@ const HistoryScreen: React.FC = () => {
     }, [progress]);
 
     const stats = useMemo(() => calculateDashboardStats(progress), [progress]);
+
+    const periodCharts = useMemo(() => calculatePeriodCharts(progress, period), [progress, period]);
+
+    // Filtro desde-hasta del historial (ambas fechas incluidas).
+    const invalidRange = Boolean(fromDate && toDate && fromDate > toDate);
+    const filteredHistory = useMemo(
+        () => (invalidRange ? [] : filterProgressByDateRange(sortedProgress, fromDate, toDate)),
+        [sortedProgress, fromDate, toDate, invalidRange],
+    );
+    const hasDateFilter = Boolean(fromDate || toDate);
 
     // Periodo que cubre el reporte: del registro mas antiguo al mas reciente.
     const reportPeriod = useMemo(() => {
@@ -228,11 +245,47 @@ const HistoryScreen: React.FC = () => {
                 <Box sx={{ p: 4 }}>
                     {tabValue === 0 && (
                         <Grid container spacing={5}>
-                            <Grid size={{ xs: 12, lg: 6 }}>
-                                <SimpleBarChart data={stats.weeklyReps} title="Repeticiones por Día" subtitle="Últimos 7 días" unit="reps" />
+                            <Grid size={{ xs: 12 }}>
+                                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' } }}>
+                                    <Box>
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
+                                            {period === 'week' ? 'Vista semanal' : 'Vista mensual'}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
+                                            Periodo: {periodCharts.rangeLabel}
+                                        </Typography>
+                                    </Box>
+                                    <ToggleButtonGroup
+                                        value={period}
+                                        exclusive
+                                        size="small"
+                                        color="primary"
+                                        aria-label="Periodo de las estadísticas"
+                                        onChange={(_, value: StatsPeriod | null) => { if (value) {setPeriod(value);} }}
+                                    >
+                                        <ToggleButton value="week" sx={{ fontWeight: 700, px: 2 }}>Semanal</ToggleButton>
+                                        <ToggleButton value="month" sx={{ fontWeight: 700, px: 2 }}>Mensual</ToggleButton>
+                                    </ToggleButtonGroup>
+                                </Stack>
                             </Grid>
                             <Grid size={{ xs: 12, lg: 6 }}>
-                                <SimpleBarChart data={stats.monthlyVolume} title="Carga Mensual" subtitle="Volumen acumulado" color="secondary.main" unit="kg" />
+                                <SimpleBarChart
+                                    data={periodCharts.reps}
+                                    title="Repeticiones"
+                                    subtitle={period === 'week' ? 'Por día, últimos 7 días' : 'Por semana, últimas 4 semanas'}
+                                    unit="reps"
+                                    emptyMessage="No hay datos de progreso en el periodo seleccionado."
+                                />
+                            </Grid>
+                            <Grid size={{ xs: 12, lg: 6 }}>
+                                <SimpleBarChart
+                                    data={periodCharts.volume}
+                                    title="Carga (volumen)"
+                                    subtitle={period === 'week' ? 'Repeticiones × peso por día' : 'Repeticiones × peso por semana'}
+                                    color="secondary.main"
+                                    unit="kg"
+                                    emptyMessage="No hay datos de progreso en el periodo seleccionado."
+                                />
                             </Grid>
                             <Grid size={{ xs: 12 }}>
                                 <Box sx={{ p: 4, textAlign: 'center', bgcolor: 'primary.main', color: 'white', borderRadius: 5 }}>
@@ -248,13 +301,51 @@ const HistoryScreen: React.FC = () => {
                     )}
 
                     {tabValue === 1 && (
+                        <Box>
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3, alignItems: { xs: 'stretch', sm: 'flex-start' } }}>
+                            <TextField
+                                label="Desde"
+                                type="date"
+                                size="small"
+                                value={fromDate}
+                                onChange={(e) => setFromDate(e.target.value)}
+                                slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: toDate || undefined } }}
+                            />
+                            <TextField
+                                label="Hasta"
+                                type="date"
+                                size="small"
+                                value={toDate}
+                                onChange={(e) => setToDate(e.target.value)}
+                                error={invalidRange}
+                                helperText={invalidRange ? 'La fecha final debe ser igual o posterior a la inicial.' : undefined}
+                                slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: fromDate || undefined } }}
+                            />
+                            <Button
+                                variant="outlined"
+                                disabled={!hasDateFilter}
+                                onClick={() => { setFromDate(''); setToDate(''); }}
+                                sx={{ fontWeight: 700 }}
+                            >
+                                Limpiar filtro
+                            </Button>
+                        </Stack>
+                        {sortedProgress.length > 0 && !invalidRange && (
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 600 }}>
+                                {hasDateFilter
+                                    ? `${filteredHistory.length} de ${sortedProgress.length} registros en el rango, del más reciente al más antiguo.`
+                                    : `${sortedProgress.length} registros, del más reciente al más antiguo.`}
+                            </Typography>
+                        )}
                         <List sx={{ py: 0 }}>
-                            {sortedProgress.length === 0 ? (
+                            {filteredHistory.length === 0 ? (
                                 <Box sx={{ py: 10, textAlign: 'center' }}>
-                                    <Typography color="text.secondary" sx={{ fontWeight: 600 }}>No hay registros de progreso.</Typography>
+                                    <Typography color="text.secondary" sx={{ fontWeight: 600 }}>
+                                        {sortedProgress.length === 0 ? 'No hay registros de progreso.' : 'No hay registros en el rango de fechas seleccionado.'}
+                                    </Typography>
                                 </Box>
                             ) : (
-                                sortedProgress.slice(0, 10).map((p, i) => (
+                                filteredHistory.map((p, i) => (
                                     <React.Fragment key={`${p.idProgress}-${i}`}>
                                         <ListItem sx={{ py: 2.5, px: 1 }}>
                                             <ListItemAvatar>
@@ -268,18 +359,20 @@ const HistoryScreen: React.FC = () => {
                                                     <Stack direction="row" spacing={2} component="span" sx={{ mt: 0.5, display: 'flex' }}>
                                                         <Typography variant="caption" component="span" sx={{ fontWeight: 600 }}>{new Date(p.dateLogged).toLocaleString()}</Typography>
                                                         <Typography variant="caption" component="span" color="primary" sx={{ fontWeight: 800 }}>{p.reps} Reps</Typography>
-                                                        <Typography variant="caption" component="span" color="secondary" sx={{ fontWeight: 800 }}>{p.weightKg} kg</Typography>
+                                                        <Typography variant="caption" component="span" color="secondary" sx={{ fontWeight: 800 }}>{p.weightKg ?? 0} kg</Typography>
+                                                        <Typography variant="caption" component="span" sx={{ fontWeight: 800 }}>{p.durationMin ?? 0} min</Typography>
                                                     </Stack>
                                                 }
                                                 slotProps={{ secondary: { component: 'span' } }}
                                             />
-                                            <Chip label={`${p.effortLevel}/10`} size="small" sx={{ fontWeight: 800, borderRadius: 1.5, bgcolor: 'success.light', color: 'success.dark' }} />
+                                            <Chip label={`Esfuerzo ${p.effortLevel ?? '-'}/10`} size="small" sx={{ fontWeight: 800, borderRadius: 1.5, bgcolor: 'success.light', color: 'success.dark' }} />
                                         </ListItem>
-                                        {i < Math.min(sortedProgress.length, 10) - 1 && <Divider />}
+                                        {i < filteredHistory.length - 1 && <Divider />}
                                     </React.Fragment>
                                 ))
                             )}
                         </List>
+                        </Box>
                     )}
 
                     {tabValue === 2 && (
