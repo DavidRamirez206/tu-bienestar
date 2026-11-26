@@ -20,6 +20,7 @@ import { useAppDispatch } from "../../hooks/useDispatch";
 import { showSnackbar } from "../../store/slices/uiSlice";
 import RolesTable from "../../components/roles/RolesTable";
 import RoleFormDialog from "../../components/roles/RoleFormDialog";
+import UserRolesPanel from "../../components/roles/UserRolesPanel";
 
 const RoleManagementScreen = () => {
   const dispatch = useAppDispatch();
@@ -257,6 +258,8 @@ const RoleManagementScreen = () => {
           onDelete={handleDeleteRole}
         />
       </Paper>
+
+      <UserRolesPanel roles={sortedRoles} notify={notify} />
 
       <RoleFormDialog
         open={openForm}

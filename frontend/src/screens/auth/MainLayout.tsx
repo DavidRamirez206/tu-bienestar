@@ -36,6 +36,8 @@ import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
 import LogoutIcon from "@mui/icons-material/Logout";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import ChatIcon from "@mui/icons-material/Chat";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import PolicyIcon from "@mui/icons-material/Policy";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import React from "react";
 
@@ -117,6 +119,18 @@ const navItems: NavItem[] = [
     label: "Gestionar entrenadores",
     path: "/trainers",
     icon: <SupervisorAccountIcon />,
+    requiredAuthorities: ["ADMIN"],
+  },
+  {
+    label: "Roles",
+    path: "/roles",
+    icon: <AdminPanelSettingsIcon />,
+    requiredAuthorities: ["ADMIN"],
+  },
+  {
+    label: "Permisos",
+    path: "/policies",
+    icon: <PolicyIcon />,
     requiredAuthorities: ["ADMIN"],
   },
   {

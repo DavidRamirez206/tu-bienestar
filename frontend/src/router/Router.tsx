@@ -20,6 +20,8 @@ import MessagesScreen from "../screens/messages/MessagesScreen";
 import AssignmentsManagementScreen from "../screens/admin/AssignmentsManagementScreen";
 import TrainersManagementScreen from "../screens/admin/TrainersManagementScreen";
 import MyStudentsScreen from "../screens/trainer/MyStudentsScreen";
+import RoleManagementScreen from "../screens/admin/RoleManagementScreen";
+import PolicyManagementScreen from "../screens/admin/PolicyManagementScreen";
 
 // Cada historia agrega aqui sus rutas.
 const router = createBrowserRouter(
@@ -59,7 +61,11 @@ const router = createBrowserRouter(
             {
               // Panel administrativo de entrenadores.
               element: <ProtectedRoute requiredRoles={["ADMIN"]} />,
-              children: [{ path: "/trainers", element: <TrainersManagementScreen /> }],
+              children: [
+                { path: "/trainers", element: <TrainersManagementScreen /> },
+                { path: "/roles", element: <RoleManagementScreen /> },
+                { path: "/policies", element: <PolicyManagementScreen /> },
+              ],
             },
             {
               // Solo los entrenadores (y el administrador) entran a "Mis alumnos".
